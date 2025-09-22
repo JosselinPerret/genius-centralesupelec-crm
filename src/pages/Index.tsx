@@ -5,6 +5,7 @@ import { Dashboard } from '@/components/dashboard/Dashboard';
 import { CompanyTable } from '@/components/companies/CompanyTable';
 import { TagManager } from '@/components/tags/TagManager';
 import { UserManagement } from '@/components/users/UserManagement';
+import { AssignmentManager } from '@/components/assignments/AssignmentManager';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -30,6 +31,8 @@ const Index = () => {
         return <Dashboard />;
       case 'companies':
         return <CompanyTable />;
+      case 'assignments':
+        return <AssignmentManager />;
       case 'users':
         return <UserManagement />;
       case 'tags':

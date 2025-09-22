@@ -1,4 +1,35 @@
-# Welcome to your Lovable project
+# Enterprise Elysium CRM
+
+A comprehensive Customer Relationship Management (CRM) system built with modern web technologies.
+
+## Features
+
+### Core Functionality
+- **Dashboard**: Overview of system statistics and key metrics
+- **Company Management**: Create, read, update, and delete company records
+- **User Management**: Handle user profiles and role assignments
+- **Tag System**: Organize companies with customizable tags
+- **Notes System**: Add and manage notes for companies
+- **Assignments**: Users can assign themselves to companies with specific roles
+
+### Assignment System
+The assignment system allows users to:
+- **Self-assign to companies**: Users can assign themselves to companies with different roles
+- **Role management**: Choose from predefined roles (Contact Person, Collaborator, Representative, Consultant)
+- **Search and filter**: Find companies easily with search functionality
+- **Track assignment history**: View when assignments were created
+- **Remove assignments**: Users can remove their own assignments
+
+### User Roles
+- **ADMIN**: Full system access and management capabilities
+- **MANAGER**: Can manage companies, assignments, and tags
+- **VOLUNTEER**: Can view data and manage their own assignments
+
+### Security Features
+- Row Level Security (RLS) policies for data protection
+- User authentication with Supabase Auth
+- Role-based access control
+- Secure API endpoints
 
 ## Project info
 

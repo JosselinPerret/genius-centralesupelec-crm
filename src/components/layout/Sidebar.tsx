@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Users, Tag, Settings, LogOut } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, Settings, LogOut, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ interface SidebarProps {
 const navigation = [
   { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
   { id: 'companies', name: 'Companies', icon: Building2 },
+  { id: 'assignments', name: 'Assignments', icon: UserCheck },
   { id: 'users', name: 'Users', icon: Users },
   { id: 'tags', name: 'Tags', icon: Tag },
 ];
