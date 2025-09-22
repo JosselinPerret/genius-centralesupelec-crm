@@ -1,32 +1,39 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { CompanyTable } from '@/components/companies/CompanyTable';
-import { mockCompanies } from '@/data/mockData';
+import { TagManager } from '@/components/tags/TagManager';
+import { UserManagement } from '@/components/users/UserManagement';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const { user, loading } = useAuth();
+
+  // Redirect to auth if not authenticated
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
       case 'companies':
-        return <CompanyTable companies={mockCompanies} />;
+        return <CompanyTable />;
       case 'users':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-foreground mb-2">User Management</h2>
-            <p className="text-muted-foreground">User management features will be available after connecting Supabase for authentication.</p>
-          </div>
-        );
+        return <UserManagement />;
       case 'tags':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Tag Management</h2>
-            <p className="text-muted-foreground">Tag management features coming soon.</p>
-          </div>
-        );
+        return <TagManager />;
       default:
         return <Dashboard />;
     }

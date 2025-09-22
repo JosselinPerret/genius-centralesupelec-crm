@@ -1,56 +1,54 @@
+// Database types matching Supabase schema
 export type UserRole = 'ADMIN' | 'MANAGER' | 'VOLUNTEER';
 
 export type CompanyStatus = 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
 
-export interface User {
+export interface Profile {
   id: string;
-  email: string;
+  user_id: string;
   name: string;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Company {
   id: string;
   name: string;
-  contactName?: string;
-  contactEmail?: string;
+  contact_name?: string;
+  contact_email?: string;
   phone?: string;
   status: CompanyStatus;
-  boothNumber?: string;
-  boothLocation?: string;
-  boothSize?: string;
-  tags: Tag[];
-  notes: Note[];
-  assignments: Assignment[];
-  createdAt: string;
-  updatedAt: string;
+  booth_number?: string;
+  booth_location?: string;
+  booth_size?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Tag {
   id: string;
   name: string;
   color: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Note {
   id: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
-  companyId: string;
-  authorId: string;
-  author: User;
+  created_at: string;
+  updated_at: string;
+  company_id: string;
+  author_id: string;
+  profiles: Profile;
 }
 
 export interface Assignment {
   id: string;
   role: string;
-  createdAt: string;
-  companyId: string;
-  userId: string;
-  user: User;
+  created_at: string;
+  company_id: string;
+  user_id: string;
+  profiles: Profile;
 }

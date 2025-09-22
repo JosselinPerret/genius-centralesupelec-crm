@@ -1,18 +1,41 @@
+import { useState, useEffect } from 'react';
 import { Building2, Users, Target, TrendingUp } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockCompanies } from '@/data/mockData';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { supabase } from '@/integrations/supabase/client';
+import { Company } from '@/types/crm';
 
 export function Dashboard() {
-  const totalCompanies = mockCompanies.length;
-  const activeCompanies = mockCompanies.filter(c => c.status === 'ACTIVE').length;
-  const prospects = mockCompanies.filter(c => c.status === 'PROSPECT').length;
-  const conversionRate = ((activeCompanies / totalCompanies) * 100).toFixed(1);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const recentCompanies = mockCompanies
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 5);
+  useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  const loadCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      setCompanies(data || []);
+    } catch (error) {
+      console.error('Error loading companies:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const totalCompanies = companies.length;
+  const activeCompanies = companies.filter(c => c.status === 'ACTIVE').length;
+  const prospects = companies.filter(c => c.status === 'PROSPECT').length;
+  const conversionRate = totalCompanies > 0 ? ((activeCompanies / totalCompanies) * 100).toFixed(1) : '0';
+
+  const recentCompanies = companies.slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -57,22 +80,32 @@ export function Dashboard() {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentCompanies.map((company) => (
-                <div key={company.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-2 w-2 rounded-full bg-primary"></div>
-                    <div>
-                      <p className="font-medium text-foreground">{company.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Updated {new Date(company.updatedAt).toLocaleDateString()}
-                      </p>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentCompanies.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">No recent activity</p>
+                ) : (
+                  recentCompanies.map((company) => (
+                    <div key={company.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-2 w-2 rounded-full bg-primary"></div>
+                        <div>
+                          <p className="font-medium text-foreground">{company.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Updated {new Date(company.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <StatusBadge status={company.status} />
                     </div>
-                  </div>
-                  <StatusBadge status={company.status} />
-                </div>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -81,19 +114,28 @@ export function Dashboard() {
             <CardTitle>Status Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {Object.entries(
-                mockCompanies.reduce((acc, company) => {
-                  acc[company.status] = (acc[company.status] || 0) + 1;
-                  return acc;
-                }, {} as Record<string, number>)
-              ).map(([status, count]) => (
-                <div key={status} className="flex items-center justify-between">
-                  <StatusBadge status={status as any} />
-                  <span className="font-medium text-foreground">{count}</span>
-                </div>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(
+                  companies.reduce((acc, company) => {
+                    acc[company.status] = (acc[company.status] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+                ).map(([status, count]) => (
+                  <div key={status} className="flex items-center justify-between">
+                    <StatusBadge status={status as any} />
+                    <span className="font-medium text-foreground">{count}</span>
+                  </div>
+                ))}
+                {companies.length === 0 && (
+                  <p className="text-muted-foreground text-sm">No companies yet</p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
