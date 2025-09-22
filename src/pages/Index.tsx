@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { CompanyTable } from '@/components/companies/CompanyTable';
@@ -9,8 +9,31 @@ import { AssignmentManager } from '@/components/assignments/AssignmentManager';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const validTabs = ['dashboard', 'companies', 'assignments', 'users', 'tags'];
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = validTabs.includes(tabFromUrl || '') ? tabFromUrl! : 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const { user, loading } = useAuth();
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams, activeTab]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // Update URL to reflect the current tab
+    if (tab === 'dashboard') {
+      navigate('/', { replace: true });
+    } else {
+      navigate(`/?tab=${tab}`, { replace: true });
+    }
+  };
 
   // Redirect to auth if not authenticated
   if (!loading && !user) {
@@ -44,7 +67,7 @@ const Index = () => {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={handleTabChange} />
       <main className="flex-1 overflow-y-auto">
         <div className="p-6">
           {renderContent()}

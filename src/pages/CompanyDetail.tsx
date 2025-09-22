@@ -81,7 +81,7 @@ export default function CompanyDetail() {
         description: "Failed to load company details",
         variant: "destructive",
       });
-      navigate('/companies');
+      navigate('/?tab=companies');
     } finally {
       setIsLoading(false);
     }
@@ -199,7 +199,7 @@ export default function CompanyDetail() {
     return (
       <div className="text-center py-12">
         <p className="text-lg text-foreground">Company not found</p>
-        <Button onClick={() => navigate('/companies')} className="mt-4">
+        <Button onClick={() => navigate('/?tab=companies')} className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Companies
         </Button>
@@ -236,7 +236,7 @@ export default function CompanyDetail() {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => navigate('/companies')}
+            onClick={() => navigate('/?tab=companies')}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
