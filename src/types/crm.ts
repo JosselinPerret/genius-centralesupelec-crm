@@ -1,7 +1,7 @@
 // Database types matching Supabase schema
 export type UserRole = 'ADMIN' | 'MANAGER' | 'VOLUNTEER';
 
-export type CompanyStatus = 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
+export type CompanyStatus = 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
 
 export interface Profile {
   id: string;
@@ -19,9 +19,7 @@ export interface Company {
   contact_email?: string;
   phone?: string;
   status: CompanyStatus;
-  booth_number?: string;
-  booth_location?: string;
-  booth_size?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }

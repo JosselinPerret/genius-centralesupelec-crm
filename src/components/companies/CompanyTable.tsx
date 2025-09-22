@@ -300,7 +300,7 @@ export function CompanyTable() {
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <Filter className="h-4 w-4" />
-                  Filters
+                  Filtres
                   {hasActiveFilters && (
                     <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                       !
@@ -311,18 +311,18 @@ export function CompanyTable() {
               <PopoverContent className="w-80" align="start">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Filters</h4>
+                    <h4 className="font-medium">Filtres</h4>
                     {hasActiveFilters && (
                       <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="h-4 w-4 mr-1" />
-                        Clear
+                        Effacer
                       </Button>
                     )}
                   </div>
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Status</label>
+                      <label className="text-sm font-medium mb-2 block">Statut</label>
                       <Select
                         value={filters.status}
                         onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
@@ -331,17 +331,17 @@ export function CompanyTable() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="all">Tous les statuts</SelectItem>
                           <SelectItem value="PROSPECT">Prospect</SelectItem>
-                          <SelectItem value="ACTIVE">Active</SelectItem>
-                          <SelectItem value="INACTIVE">Inactive</SelectItem>
-                          <SelectItem value="FORMER">Former</SelectItem>
+                          <SelectItem value="REFUSE">Refusé</SelectItem>
+                          <SelectItem value="EN_COURS">En cours de discussion</SelectItem>
+                          <SelectItem value="RELANCE">Relance</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Tag</label>
+                      <label className="text-sm font-medium mb-2 block">Étiquette</label>
                       <Select
                         value={filters.tagId}
                         onValueChange={(value) => setFilters(prev => ({ ...prev, tagId: value }))}
@@ -350,7 +350,7 @@ export function CompanyTable() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Tags</SelectItem>
+                          <SelectItem value="all">Toutes les étiquettes</SelectItem>
                           {allTags.map((tag) => (
                             <SelectItem key={tag.id} value={tag.id}>
                               <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ export function CompanyTable() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Assignments</label>
+                      <label className="text-sm font-medium mb-2 block">Assignations</label>
                       <Select
                         value={filters.assignmentFilter}
                         onValueChange={(value) => setFilters(prev => ({ ...prev, assignmentFilter: value }))}
@@ -376,10 +376,10 @@ export function CompanyTable() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Companies</SelectItem>
-                          <SelectItem value="assigned">Has Assignments</SelectItem>
-                          <SelectItem value="unassigned">No Assignments</SelectItem>
-                          <SelectItem value="my-assignments">My Assignments</SelectItem>
+                          <SelectItem value="all">Toutes les entreprises</SelectItem>
+                          <SelectItem value="assigned">Avec assignations</SelectItem>
+                          <SelectItem value="unassigned">Sans assignations</SelectItem>
+                          <SelectItem value="my-assignments">Mes assignations</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -391,23 +391,23 @@ export function CompanyTable() {
           
           {hasActiveFilters && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Active filters:</span>
+              <span>Filtres actifs :</span>
               {filters.searchTerm && (
-                <Badge variant="secondary">Search: "{filters.searchTerm}"</Badge>
+                <Badge variant="secondary">Recherche : "{filters.searchTerm}"</Badge>
               )}
               {filters.status !== 'all' && (
-                <Badge variant="secondary">Status: {filters.status}</Badge>
+                <Badge variant="secondary">Statut : {filters.status}</Badge>
               )}
               {filters.tagId !== 'all' && (
                 <Badge variant="secondary">
-                  Tag: {allTags.find(t => t.id === filters.tagId)?.name}
+                  Étiquette : {allTags.find(t => t.id === filters.tagId)?.name}
                 </Badge>
               )}
               {filters.assignmentFilter !== 'all' && (
                 <Badge variant="secondary">
-                  {filters.assignmentFilter === 'assigned' && 'Has Assignments'}
-                  {filters.assignmentFilter === 'unassigned' && 'No Assignments'}
-                  {filters.assignmentFilter === 'my-assignments' && 'My Assignments'}
+                  {filters.assignmentFilter === 'assigned' && 'Avec assignations'}
+                  {filters.assignmentFilter === 'unassigned' && 'Sans assignations'}
+                  {filters.assignmentFilter === 'my-assignments' && 'Mes assignations'}
                 </Badge>
               )}
             </div>
@@ -424,21 +424,20 @@ export function CompanyTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Company</TableHead>
+                  <TableHead>Entreprise</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Assignments</TableHead>
-                  <TableHead>Booth</TableHead>
-                  <TableHead>Updated</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Étiquettes</TableHead>
+                  <TableHead>Assignations</TableHead>
+                  <TableHead>Modifié</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCompanies.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      {companies.length === 0 ? 'No companies found. Create your first company to get started.' : 'No companies match your search criteria.'}
+                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                      {companies.length === 0 ? 'Aucune entreprise trouvée. Créez votre première entreprise pour commencer.' : 'Aucune entreprise ne correspond à vos critères de recherche.'}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -490,18 +489,10 @@ export function CompanyTable() {
                           )}
                           {company.hasCurrentUserAssignment && (
                             <Badge variant="outline" className="text-primary border-primary">
-                              You
+                              Vous
                             </Badge>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {company.booth_number && (
-                          <div className="text-sm">
-                            <div className="font-medium text-foreground">{company.booth_number}</div>
-                            <div className="text-muted-foreground">{company.booth_location}</div>
-                          </div>
-                        )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(company.updated_at).toLocaleDateString()}

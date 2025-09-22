@@ -10,19 +10,19 @@ interface StatusBadgeProps {
 const statusConfig = {
   PROSPECT: {
     label: 'Prospect',
-    className: 'bg-warning text-warning-foreground border-warning/20',
+    className: 'bg-blue-100 text-blue-800 border-blue-200',
   },
-  ACTIVE: {
-    label: 'Active',
-    className: 'bg-success text-success-foreground border-success/20',
+  REFUSE: {
+    label: 'Refusé',
+    className: 'bg-red-100 text-red-800 border-red-200',
   },
-  INACTIVE: {
-    label: 'Inactive',
-    className: 'bg-muted text-muted-foreground border-muted-foreground/20',
+  EN_COURS: {
+    label: 'En cours de discussion',
+    className: 'bg-green-100 text-green-800 border-green-200',
   },
-  FORMER: {
-    label: 'Former',
-    className: 'bg-destructive text-destructive-foreground border-destructive/20',
+  RELANCE: {
+    label: 'Relance',
+    className: 'bg-orange-100 text-orange-800 border-orange-200',
   },
 };
 

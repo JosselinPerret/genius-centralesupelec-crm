@@ -18,10 +18,8 @@ interface Company {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
-  booth_number?: string;
-  booth_location?: string;
-  booth_size?: string;
+  status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -77,8 +75,8 @@ export default function CompanyDetail() {
     } catch (error) {
       console.error('Error loading company:', error);
       toast({
-        title: "Error",
-        description: "Failed to load company details",
+        title: "Erreur",
+        description: "Échec du chargement des détails de l'entreprise",
         variant: "destructive",
       });
       navigate('/?tab=companies');
@@ -198,10 +196,10 @@ export default function CompanyDetail() {
   if (!company) {
     return (
       <div className="text-center py-12">
-        <p className="text-lg text-foreground">Company not found</p>
+        <p className="text-lg text-foreground">Entreprise introuvable</p>
         <Button onClick={() => navigate('/?tab=companies')} className="mt-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Companies
+          Retour aux entreprises
         </Button>
       </div>
     );
@@ -216,9 +214,9 @@ export default function CompanyDetail() {
             onClick={() => setIsEditing(false)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Cancel
+            Annuler
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Edit Company</h1>
+          <h1 className="text-3xl font-bold text-foreground">Modifier l'entreprise</h1>
         </div>
         
         <CompanyForm
@@ -239,7 +237,7 @@ export default function CompanyDetail() {
             onClick={() => navigate('/?tab=companies')}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            Retour
           </Button>
           <h1 className="text-3xl font-bold text-foreground">{company.name}</h1>
         </div>
@@ -247,7 +245,7 @@ export default function CompanyDetail() {
         {canEdit && (
           <Button onClick={() => setIsEditing(true)}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit Company
+            Modifier l'entreprise
           </Button>
         )}
       </div>
@@ -256,17 +254,17 @@ export default function CompanyDetail() {
         <div className="md:col-span-2 space-y-6">
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Company Information</CardTitle>
+              <CardTitle>Informations de l'entreprise</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-foreground">Status</span>
+                <span className="font-medium text-foreground">Statut</span>
                 <StatusBadge status={company.status} />
               </div>
               
               {company.contact_name && (
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium text-foreground">Contact:</span>
+                  <span className="font-medium text-foreground">Contact :</span>
                   <span className="text-foreground">{company.contact_name}</span>
                 </div>
               )}
@@ -285,21 +283,17 @@ export default function CompanyDetail() {
                 </div>
               )}
               
-              {company.booth_number && (
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-foreground">
-                    Booth {company.booth_number}
-                    {company.booth_location && ` - ${company.booth_location}`}
-                    {company.booth_size && ` (${company.booth_size})`}
-                  </span>
+              {company.notes && (
+                <div className="space-y-2">
+                  <span className="font-medium text-foreground">Notes :</span>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{company.notes}</p>
                 </div>
               )}
               
               <div className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">
-                  Created {formatDistanceToNow(new Date(company.created_at), { addSuffix: true })}
+                  Créé {formatDistanceToNow(new Date(company.created_at), { addSuffix: true })}
                 </span>
               </div>
             </CardContent>
@@ -311,11 +305,11 @@ export default function CompanyDetail() {
         <div className="space-y-6">
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Tags</CardTitle>
+              <CardTitle>Étiquettes</CardTitle>
             </CardHeader>
             <CardContent>
               {tags.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No tags assigned</p>
+                <p className="text-muted-foreground text-sm">Aucune étiquette assignée</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
@@ -335,12 +329,12 @@ export default function CompanyDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Assigned Users ({assignments.length})
+                Utilisateurs assignés ({assignments.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               {assignments.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No users assigned to this company</p>
+                <p className="text-muted-foreground text-sm">Aucun utilisateur assigné à cette entreprise</p>
               ) : (
                 <div className="space-y-3">
                   {assignments.map((assignment) => (
@@ -365,7 +359,7 @@ export default function CompanyDetail() {
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Assigned {new Date(assignment.created_at).toLocaleDateString()}
+                        Assigné le {new Date(assignment.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   ))}

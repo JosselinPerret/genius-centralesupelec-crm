@@ -22,10 +22,8 @@ interface CompanyFormData {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
-  booth_number?: string;
-  booth_location?: string;
-  booth_size?: string;
+  status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
+  notes?: string;
 }
 
 interface CompanyFormProps {
@@ -107,17 +105,17 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
   return (
     <Card className="shadow-card">
       <CardHeader>
-        <CardTitle>{company ? 'Edit Company' : 'Add New Company'}</CardTitle>
+        <CardTitle>{company ? 'Modifier l\'entreprise' : 'Ajouter une nouvelle entreprise'}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Company Name *</Label>
+              <Label htmlFor="name">Nom de l'entreprise *</Label>
               <Input
                 id="name"
-                {...register('name', { required: 'Company name is required' })}
-                placeholder="Enter company name"
+                {...register('name', { required: 'Le nom de l\'entreprise est requis' })}
+                placeholder="Entrez le nom de l'entreprise"
               />
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -125,78 +123,61 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">Statut</Label>
               <Select value={statusValue} onValueChange={(value) => setValue('status', value as any)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Sélectionner un statut" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PROSPECT">Prospect</SelectItem>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="INACTIVE">Inactive</SelectItem>
-                  <SelectItem value="FORMER">Former</SelectItem>
+                  <SelectItem value="REFUSE">Refusé</SelectItem>
+                  <SelectItem value="EN_COURS">En cours de discussion</SelectItem>
+                  <SelectItem value="RELANCE">Relance</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact_name">Contact Name</Label>
+              <Label htmlFor="contact_name">Nom du contact</Label>
               <Input
                 id="contact_name"
                 {...register('contact_name')}
-                placeholder="Enter contact name"
+                placeholder="Entrez le nom du contact"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contact_email">Contact Email</Label>
+              <Label htmlFor="contact_email">Email du contact</Label>
               <Input
                 id="contact_email"
                 type="email"
                 {...register('contact_email')}
-                placeholder="Enter contact email"
+                placeholder="Entrez l'email du contact"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Téléphone</Label>
               <Input
                 id="phone"
                 {...register('phone')}
-                placeholder="Enter phone number"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="booth_number">Booth Number</Label>
-              <Input
-                id="booth_number"
-                {...register('booth_number')}
-                placeholder="e.g., A-101"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="booth_location">Booth Location</Label>
-              <Input
-                id="booth_location"
-                {...register('booth_location')}
-                placeholder="e.g., Hall A"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="booth_size">Booth Size</Label>
-              <Input
-                id="booth_size"
-                {...register('booth_size')}
-                placeholder="e.g., 10x10"
+                placeholder="Entrez le numéro de téléphone"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Tags</Label>
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              {...register('notes')}
+              placeholder="Entrez des notes ou commentaires..."
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Étiquettes</Label>
             <div className="flex flex-wrap gap-2">
               {availableTags.map((tag) => {
                 const isSelected = selectedTags.includes(tag.id);
@@ -218,10 +199,10 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              Annuler
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : company ? 'Update Company' : 'Create Company'}
+              {isLoading ? 'Enregistrement...' : company ? 'Mettre à jour' : 'Créer l\'entreprise'}
             </Button>
           </div>
         </form>

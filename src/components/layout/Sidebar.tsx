@@ -10,11 +10,11 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-  { id: 'companies', name: 'Companies', icon: Building2 },
-  { id: 'assignments', name: 'Assignments', icon: UserCheck },
-  { id: 'users', name: 'Users', icon: Users },
-  { id: 'tags', name: 'Tags', icon: Tag },
+  { id: 'dashboard', name: 'Tableau de bord', icon: LayoutDashboard },
+  { id: 'companies', name: 'Entreprises', icon: Building2 },
+  { id: 'assignments', name: 'Assignations', icon: UserCheck },
+  { id: 'users', name: 'Utilisateurs', icon: Users },
+  { id: 'tags', name: 'Étiquettes', icon: Tag },
 ];
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -25,7 +25,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-2">
             <Building2 className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">CRM System</h1>
+            <h1 className="text-xl font-bold text-foreground">Système CRM</h1>
           </div>
           {profile && (
             <Badge variant="secondary" className="text-xs">
@@ -58,7 +58,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       <div className="border-t border-border p-3 space-y-1">
         <Button variant="ghost" className="w-full justify-start">
           <Settings className="mr-3 h-5 w-5" />
-          Settings
+          Paramètres
         </Button>
         <Button 
           variant="ghost" 
@@ -66,7 +66,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onClick={signOut}
         >
           <LogOut className="mr-3 h-5 w-5" />
-          Logout
+          Déconnexion
         </Button>
       </div>
     </div>
