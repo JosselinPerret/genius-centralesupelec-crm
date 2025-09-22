@@ -11,7 +11,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X } from 'lucide-react';
 import { Company } from '@/types/crm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +22,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -34,19 +40,35 @@ interface Tag {
 
 interface CompanyWithTags extends Company {
   tags?: Tag[];
+  assignedUsers?: number;
+  hasCurrentUserAssignment?: boolean;
 }
+
+type SearchFilters = {
+  searchTerm: string;
+  status: string;
+  tagId: string;
+  assignmentFilter: string; // 'all', 'assigned', 'unassigned', 'my-assignments'
+};
 
 export function CompanyTable() {
   const [companies, setCompanies] = useState<CompanyWithTags[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [filters, setFilters] = useState<SearchFilters>({
+    searchTerm: '',
+    status: 'all',
+    tagId: 'all',
+    assignmentFilter: 'all'
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     loadCompanies();
+    loadTags();
   }, []);
 
   const loadCompanies = async () => {
@@ -58,9 +80,10 @@ export function CompanyTable() {
 
       if (error) throw error;
 
-      // Load tags for each company
+      // Load tags for each company and assignment counts
       const companiesWithTags = await Promise.all(
         (companiesData || []).map(async (company) => {
+          // Load tags
           const { data: tagData } = await supabase
             .from('company_tags')
             .select(`
@@ -72,9 +95,21 @@ export function CompanyTable() {
             `)
             .eq('company_id', company.id);
 
+          // Load assignment count and check if current user is assigned
+          const { data: assignmentData } = await supabase
+            .from('assignments')
+            .select('user_id')
+            .eq('company_id', company.id);
+
+          const assignedUsers = assignmentData?.length || 0;
+          const hasCurrentUserAssignment = user ? 
+            assignmentData?.some(a => a.user_id === user.id) || false : false;
+
           return {
             ...company,
-            tags: tagData?.map((ct: any) => ct.tags).filter(Boolean) || []
+            tags: tagData?.map((ct: any) => ct.tags).filter(Boolean) || [],
+            assignedUsers,
+            hasCurrentUserAssignment
           };
         })
       );
@@ -89,6 +124,20 @@ export function CompanyTable() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setAllTags(data || []);
+    } catch (error) {
+      console.error('Error loading tags:', error);
     }
   };
 
@@ -156,11 +205,52 @@ export function CompanyTable() {
     }
   };
 
-  const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.contact_email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCompanies = companies.filter(company => {
+    // Search term filter
+    const matchesSearch = !filters.searchTerm || 
+      company.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      company.contact_name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      company.contact_email?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    // Status filter
+    const matchesStatus = filters.status === 'all' || company.status === filters.status;
+
+    // Tag filter
+    const matchesTag = filters.tagId === 'all' || 
+      company.tags?.some(tag => tag.id === filters.tagId);
+
+    // Assignment filter
+    let matchesAssignment = true;
+    switch (filters.assignmentFilter) {
+      case 'assigned':
+        matchesAssignment = company.assignedUsers > 0;
+        break;
+      case 'unassigned':
+        matchesAssignment = company.assignedUsers === 0;
+        break;
+      case 'my-assignments':
+        matchesAssignment = company.hasCurrentUserAssignment;
+        break;
+      default:
+        matchesAssignment = true;
+    }
+
+    return matchesSearch && matchesStatus && matchesTag && matchesAssignment;
+  });
+
+  const clearFilters = () => {
+    setFilters({
+      searchTerm: '',
+      status: 'all',
+      tagId: 'all',
+      assignmentFilter: 'all'
+    });
+  };
+
+  const hasActiveFilters = filters.searchTerm !== '' || 
+    filters.status !== 'all' || 
+    filters.tagId !== 'all' || 
+    filters.assignmentFilter !== 'all';
 
   const canManageCompanies = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
   const canDeleteCompanies = profile?.role === 'ADMIN';
@@ -194,16 +284,134 @@ export function CompanyTable() {
             </Button>
           )}
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search companies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search companies..."
+                value={filters.searchTerm}
+                onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
+                className="pl-9"
+              />
+            </div>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filters
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                      !
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="start">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filters</h4>
+                    {hasActiveFilters && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters}>
+                        <X className="h-4 w-4 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Status</label>
+                      <Select
+                        value={filters.status}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Statuses</SelectItem>
+                          <SelectItem value="PROSPECT">Prospect</SelectItem>
+                          <SelectItem value="ACTIVE">Active</SelectItem>
+                          <SelectItem value="INACTIVE">Inactive</SelectItem>
+                          <SelectItem value="FORMER">Former</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Tag</label>
+                      <Select
+                        value={filters.tagId}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, tagId: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Tags</SelectItem>
+                          {allTags.map((tag) => (
+                            <SelectItem key={tag.id} value={tag.id}>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: tag.color }}
+                                />
+                                {tag.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Assignments</label>
+                      <Select
+                        value={filters.assignmentFilter}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, assignmentFilter: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Companies</SelectItem>
+                          <SelectItem value="assigned">Has Assignments</SelectItem>
+                          <SelectItem value="unassigned">No Assignments</SelectItem>
+                          <SelectItem value="my-assignments">My Assignments</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
+          
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Active filters:</span>
+              {filters.searchTerm && (
+                <Badge variant="secondary">Search: "{filters.searchTerm}"</Badge>
+              )}
+              {filters.status !== 'all' && (
+                <Badge variant="secondary">Status: {filters.status}</Badge>
+              )}
+              {filters.tagId !== 'all' && (
+                <Badge variant="secondary">
+                  Tag: {allTags.find(t => t.id === filters.tagId)?.name}
+                </Badge>
+              )}
+              {filters.assignmentFilter !== 'all' && (
+                <Badge variant="secondary">
+                  {filters.assignmentFilter === 'assigned' && 'Has Assignments'}
+                  {filters.assignmentFilter === 'unassigned' && 'No Assignments'}
+                  {filters.assignmentFilter === 'my-assignments' && 'My Assignments'}
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -220,6 +428,7 @@ export function CompanyTable() {
                   <TableHead>Contact</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Tags</TableHead>
+                  <TableHead>Assignments</TableHead>
                   <TableHead>Booth</TableHead>
                   <TableHead>Updated</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
@@ -228,7 +437,7 @@ export function CompanyTable() {
               <TableBody>
                 {filteredCompanies.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                       {companies.length === 0 ? 'No companies found. Create your first company to get started.' : 'No companies match your search criteria.'}
                     </TableCell>
                   </TableRow>
@@ -267,6 +476,22 @@ export function CompanyTable() {
                             <span className="text-xs text-muted-foreground">
                               +{(company.tags?.length || 0) - 2} more
                             </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {company.assignedUsers > 0 ? (
+                            <Badge variant="secondary">
+                              {company.assignedUsers} user{company.assignedUsers !== 1 ? 's' : ''}
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">No assignments</span>
+                          )}
+                          {company.hasCurrentUserAssignment && (
+                            <Badge variant="outline" className="text-primary border-primary">
+                              You
+                            </Badge>
                           )}
                         </div>
                       </TableCell>

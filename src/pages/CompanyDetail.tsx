@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MapPin, Phone, Mail, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, MapPin, Phone, Mail, Calendar, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { NotesSection } from '@/components/notes/NotesSection';
@@ -32,11 +32,23 @@ interface Tag {
   color: string;
 }
 
+interface AssignedUser {
+  id: string;
+  role: string;
+  created_at: string;
+  profiles: {
+    id: string;
+    name: string;
+    role: 'ADMIN' | 'MANAGER' | 'VOLUNTEER';
+  };
+}
+
 export default function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [assignments, setAssignments] = useState<AssignedUser[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile } = useAuth();
@@ -46,6 +58,7 @@ export default function CompanyDetail() {
     if (id) {
       loadCompany();
       loadCompanyTags();
+      loadCompanyAssignments();
     }
   }, [id]);
 
@@ -93,6 +106,31 @@ export default function CompanyDetail() {
       setTags(data?.map((ct: any) => ct.tags).filter(Boolean) || []);
     } catch (error) {
       console.error('Error loading company tags:', error);
+    }
+  };
+
+  const loadCompanyAssignments = async () => {
+    if (!id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select(`
+          id,
+          role,
+          created_at,
+          profiles:user_id (
+            id,
+            name,
+            role
+          )
+        `)
+        .eq('company_id', id);
+
+      if (error) throw error;
+      setAssignments(data || []);
+    } catch (error) {
+      console.error('Error loading company assignments:', error);
     }
   };
 
@@ -287,6 +325,49 @@ export default function CompanyDetail() {
                     >
                       {tag.name}
                     </Badge>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Assigned Users ({assignments.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {assignments.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No users assigned to this company</p>
+              ) : (
+                <div className="space-y-3">
+                  {assignments.map((assignment) => (
+                    <div
+                      key={assignment.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <User className="h-6 w-6 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {assignment.profiles.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary">
+                              {assignment.role}
+                            </Badge>
+                            <Badge variant="outline">
+                              {assignment.profiles.role}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Assigned {new Date(assignment.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
