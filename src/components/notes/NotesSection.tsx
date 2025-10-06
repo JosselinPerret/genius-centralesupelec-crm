@@ -80,12 +80,12 @@ export function NotesSection({ companyId }: NotesSectionProps) {
       loadNotes();
       
       toast({
-        title: "Note added",
-        description: "Your note has been added successfully.",
+        title: "Note ajoutée",
+        description: "Votre note a été ajoutée avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -111,12 +111,12 @@ export function NotesSection({ companyId }: NotesSectionProps) {
       loadNotes();
       
       toast({
-        title: "Note updated",
-        description: "Your note has been updated successfully.",
+        title: "Note mise à jour",
+        description: "Votre note a été mise à jour avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -126,7 +126,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
   };
 
   const deleteNote = async (noteId: string) => {
-    if (!confirm('Are you sure you want to delete this note?')) return;
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) return;
     
     setIsLoading(true);
     try {
@@ -140,12 +140,12 @@ export function NotesSection({ companyId }: NotesSectionProps) {
       loadNotes();
       
       toast({
-        title: "Note deleted",
-        description: "The note has been deleted successfully.",
+        title: "Note supprimée",
+        description: "La note a été supprimée avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -180,7 +180,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
               disabled={isAddingNote}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Note
+              Ajouter une note
             </Button>
           )}
         </div>
@@ -191,10 +191,10 @@ export function NotesSection({ companyId }: NotesSectionProps) {
             <Textarea
               value={newNoteContent}
               onChange={(e) => setNewNoteContent(e.target.value)}
-              placeholder="Enter your note..."
+              placeholder="Saisissez votre note..."
               rows={3}
             />
-            <div className="flex justify-end space-x-2">
+            <div className="flex items-center justify-end gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -204,7 +204,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
                 }}
               >
                 <X className="mr-2 h-4 w-4" />
-                Cancel
+                Annuler
               </Button>
               <Button
                 size="sm"
@@ -212,7 +212,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
                 disabled={isLoading || !newNoteContent.trim()}
               >
                 <Save className="mr-2 h-4 w-4" />
-                Save Note
+                Enregistrer
               </Button>
             </div>
           </div>
@@ -220,7 +220,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
 
         {notes.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            No notes available. Add the first note to get started.
+            Aucune note disponible. Ajoutez la première note pour commencer.
           </div>
         ) : (
           <div className="space-y-3">
@@ -260,20 +260,20 @@ export function NotesSection({ companyId }: NotesSectionProps) {
                 </div>
                 
                 {editingNote === note.id ? (
-                  <div className="space-y-2">
+                    <div className="space-y-2">
                     <Textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       rows={3}
                     />
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex items-center justify-end gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={cancelEditing}
                       >
                         <X className="mr-2 h-4 w-4" />
-                        Cancel
+                        Annuler
                       </Button>
                       <Button
                         size="sm"
@@ -281,7 +281,7 @@ export function NotesSection({ companyId }: NotesSectionProps) {
                         disabled={isLoading || !editContent.trim()}
                       >
                         <Save className="mr-2 h-4 w-4" />
-                        Save
+                        Enregistrer
                       </Button>
                     </div>
                   </div>

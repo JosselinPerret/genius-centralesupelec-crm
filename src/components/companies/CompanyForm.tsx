@@ -186,7 +186,7 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
             </div>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex items-center justify-end gap-3">
             <Button type="button" variant="outline" onClick={onCancel}>
               Annuler
             </Button>

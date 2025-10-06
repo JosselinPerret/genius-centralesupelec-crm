@@ -171,12 +171,12 @@ export default function CompanyDetail() {
       loadCompanyTags();
       
       toast({
-        title: "Company updated",
-        description: "The company has been updated successfully.",
+        title: "Entreprise mise à jour",
+        description: "L'entreprise a été mise à jour avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });

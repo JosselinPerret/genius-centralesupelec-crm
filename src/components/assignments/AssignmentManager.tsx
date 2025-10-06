@@ -45,9 +45,9 @@ export function AssignmentManager() {
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
 
   const roles = [
-    { value: 'CONTACT', label: 'Contact Person' },
-    { value: 'COLLABORATOR', label: 'Collaborator' },
-    { value: 'REPRESENTATIVE', label: 'Representative' },
+    { value: 'CONTACT', label: 'Personne de contact' },
+    { value: 'COLLABORATOR', label: 'Collaborateur' },
+    { value: 'REPRESENTATIVE', label: 'Représentant' },
     { value: 'CONSULTANT', label: 'Consultant' },
   ];
 
@@ -80,8 +80,8 @@ export function AssignmentManager() {
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast({
-        title: "Error",
-        description: "Failed to load assignments",
+        title: "Erreur",
+        description: "Échec du chargement des affectations",
         variant: "destructive",
       });
     }
@@ -110,8 +110,8 @@ export function AssignmentManager() {
     } catch (error) {
       console.error('Error fetching companies:', error);
       toast({
-        title: "Error",
-        description: "Failed to load companies",
+        title: "Erreur",
+        description: "Échec du chargement des entreprises",
         variant: "destructive",
       });
     } finally {
@@ -134,8 +134,8 @@ export function AssignmentManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Successfully assigned to company",
+        title: "Succès",
+        description: "Affectation à l'entreprise réussie",
       });
 
       setSelectedCompany('');
@@ -145,8 +145,8 @@ export function AssignmentManager() {
     } catch (error) {
       console.error('Error creating assignment:', error);
       toast({
-        title: "Error",
-        description: "Failed to create assignment",
+        title: "Erreur",
+        description: "Échec de la création de l'affectation",
         variant: "destructive",
       });
     }
@@ -162,8 +162,8 @@ export function AssignmentManager() {
       if (error) throw error;
 
       toast({
-        title: "Success",
-        description: "Assignment removed successfully",
+        title: "Succès",
+        description: "Affectation supprimée avec succès",
       });
 
       fetchAssignments();
@@ -171,8 +171,8 @@ export function AssignmentManager() {
     } catch (error) {
       console.error('Error removing assignment:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove assignment",
+        title: "Erreur",
+        description: "Échec de la suppression de l'affectation",
         variant: "destructive",
       });
     }
@@ -219,9 +219,9 @@ export function AssignmentManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Assignments</h1>
+          <h1 className="text-3xl font-bold text-foreground">Mes affectations</h1>
           <p className="text-muted-foreground">
-            Manage your company assignments and roles
+            Gérez vos affectations d'entreprises et vos rôles
           </p>
         </div>
       </div>
@@ -231,17 +231,17 @@ export function AssignmentManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Assign to Company
+            Affecter à une entreprise
           </CardTitle>
           <CardDescription>
-            Choose a company and your role to create a new assignment
+            Choisissez une entreprise et votre rôle pour créer une nouvelle affectation
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2 mb-4">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search companies..."
+              placeholder="Rechercher des entreprises..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-xs"
@@ -250,10 +250,10 @@ export function AssignmentManager() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Company</label>
+              <label className="text-sm font-medium mb-2 block">Entreprise</label>
               <Select value={selectedCompany} onValueChange={setSelectedCompany}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a company" />
+                  <SelectValue placeholder="Sélectionner une entreprise" />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredAvailableCompanies.map((company) => (
@@ -272,10 +272,10 @@ export function AssignmentManager() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Role</label>
+              <label className="text-sm font-medium mb-2 block">Rôle</label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder="Sélectionner un rôle" />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (
@@ -294,7 +294,7 @@ export function AssignmentManager() {
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Assignment
+                Ajouter une affectation
               </Button>
             </div>
           </div>
@@ -306,19 +306,19 @@ export function AssignmentManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Current Assignments ({assignments.length})
+            Affectations actuelles ({assignments.length})
           </CardTitle>
           <CardDescription>
-            Your current company assignments and roles
+            Vos affectations d'entreprises et rôles actuels
           </CardDescription>
         </CardHeader>
         <CardContent>
           {assignments.length === 0 ? (
             <div className="text-center py-8">
               <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No Assignments</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">Aucune affectation</h3>
               <p className="text-muted-foreground">
-                You haven't been assigned to any companies yet. Use the form above to assign yourself to a company.
+                Vous n'avez encore été affecté à aucune entreprise. Utilisez le formulaire ci-dessus pour vous affecter à une entreprise.
               </p>
             </div>
           ) : (
@@ -359,7 +359,7 @@ export function AssignmentManager() {
                     
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
-                        Since {new Date(assignment.created_at).toLocaleDateString()}
+                        Depuis le {new Date(assignment.created_at).toLocaleDateString()}
                       </span>
                       <Button
                         variant="outline"
@@ -383,19 +383,19 @@ export function AssignmentManager() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Remove Assignment</AlertDialogTitle>
+                            <AlertDialogTitle>Supprimer l'affectation</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to remove your assignment from "{getCompanyName(assignment.company_id)}"? 
-                              This action cannot be undone.
+                              Êtes-vous sûr de vouloir supprimer votre affectation de "{getCompanyName(assignment.company_id)}" ? 
+                              Cette action ne peut pas être annulée.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleRemoveAssignment(assignment.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              Remove
+                              Supprimer
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -413,9 +413,9 @@ export function AssignmentManager() {
         <Card>
           <CardContent className="text-center py-8">
             <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No Companies Found</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">Aucune entreprise trouvée</h3>
             <p className="text-muted-foreground">
-              No companies match your search criteria. Try a different search term.
+              Aucune entreprise ne correspond à vos critères de recherche. Essayez un autre terme de recherche.
             </p>
           </CardContent>
         </Card>
@@ -430,7 +430,7 @@ export function AssignmentManager() {
               {viewingCompany?.name}
             </DialogTitle>
             <DialogDescription>
-              Company details and information
+              Détails et informations de l'entreprise
             </DialogDescription>
           </DialogHeader>
           
@@ -439,13 +439,13 @@ export function AssignmentManager() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">Status</h4>
+                    <h4 className="font-medium text-foreground mb-2">Statut</h4>
                     <StatusBadge status={viewingCompany.status} />
                   </div>
                   
                   {viewingCompany.contact_name && (
                     <div>
-                      <h4 className="font-medium text-foreground mb-2">Contact Person</h4>
+                      <h4 className="font-medium text-foreground mb-2">Personne de contact</h4>
                       <p className="text-foreground">{viewingCompany.contact_name}</p>
                     </div>
                   )}
@@ -462,7 +462,7 @@ export function AssignmentManager() {
                   
                   {viewingCompany.phone && (
                     <div>
-                      <h4 className="font-medium text-foreground mb-2">Phone</h4>
+                      <h4 className="font-medium text-foreground mb-2">Téléphone</h4>
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <p className="text-foreground">{viewingCompany.phone}</p>
@@ -474,18 +474,18 @@ export function AssignmentManager() {
                 <div className="space-y-3">
                   {(viewingCompany.booth_number || viewingCompany.booth_location) && (
                     <div>
-                      <h4 className="font-medium text-foreground mb-2">Booth Information</h4>
+                      <h4 className="font-medium text-foreground mb-2">Informations du stand</h4>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <div>
                           {viewingCompany.booth_number && (
-                            <p className="text-foreground">Booth {viewingCompany.booth_number}</p>
+                            <p className="text-foreground">Stand {viewingCompany.booth_number}</p>
                           )}
                           {viewingCompany.booth_location && (
                             <p className="text-muted-foreground">{viewingCompany.booth_location}</p>
                           )}
                           {viewingCompany.booth_size && (
-                            <p className="text-muted-foreground">Size: {viewingCompany.booth_size}</p>
+                            <p className="text-muted-foreground">Taille : {viewingCompany.booth_size}</p>
                           )}
                         </div>
                       </div>
@@ -493,14 +493,14 @@ export function AssignmentManager() {
                   )}
                   
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">Created</h4>
+                    <h4 className="font-medium text-foreground mb-2">Créé le</h4>
                     <p className="text-muted-foreground">
                       {new Date(viewingCompany.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">Last Updated</h4>
+                    <h4 className="font-medium text-foreground mb-2">Dernière mise à jour</h4>
                     <p className="text-muted-foreground">
                       {new Date(viewingCompany.updated_at).toLocaleDateString()}
                     </p>
@@ -508,16 +508,16 @@ export function AssignmentManager() {
                 </div>
               </div>
               
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={() => setViewingCompany(null)}>
-                  Close
+                  Fermer
                 </Button>
                 <Button onClick={() => {
                   setViewingCompany(null);
                   handleEditCompany(viewingCompany.id);
                 }}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit Company
+                  Modifier l'entreprise
                 </Button>
               </div>
             </div>
