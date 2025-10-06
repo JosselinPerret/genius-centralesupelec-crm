@@ -18,7 +18,10 @@ interface Company {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
+  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
+  booth_number?: string;
+  booth_location?: string;
+  booth_size?: string;
   created_at: string;
   updated_at: string;
 }

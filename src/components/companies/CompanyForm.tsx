@@ -22,7 +22,7 @@ interface CompanyFormData {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
+  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
 }
 
 interface CompanyFormProps {
@@ -129,9 +129,9 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PROSPECT">Prospect</SelectItem>
-                  <SelectItem value="REFUSE">Refusé</SelectItem>
-                  <SelectItem value="EN_COURS">En cours de discussion</SelectItem>
-                  <SelectItem value="RELANCE">Relance</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  <SelectItem value="FORMER">Former</SelectItem>
                 </SelectContent>
               </Select>
             </div>

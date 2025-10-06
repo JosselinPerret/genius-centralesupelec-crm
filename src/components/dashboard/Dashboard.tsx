@@ -51,10 +51,10 @@ export function Dashboard() {
   };
 
   const totalCompanies = companies.length;
-  const activeCompanies = companies.filter(c => c.status === 'EN_COURS').length;
+  const activeCompanies = companies.filter(c => c.status === 'ACTIVE').length;
   const prospects = companies.filter(c => c.status === 'PROSPECT').length;
-  const refusedCompanies = companies.filter(c => c.status === 'REFUSE').length;
-  const relanceCompanies = companies.filter(c => c.status === 'RELANCE').length;
+  const inactiveCompanies = companies.filter(c => c.status === 'INACTIVE').length;
+  const formerCompanies = companies.filter(c => c.status === 'FORMER').length;
   const conversionRate = totalCompanies > 0 ? ((activeCompanies / totalCompanies) * 100).toFixed(1) : '0';
 
   // Data for charts
@@ -66,22 +66,22 @@ export function Dashboard() {
       label: 'Prospects'
     },
     { 
-      name: 'En cours', 
+      name: 'Active', 
       value: activeCompanies, 
-      color: 'hsl(25, 100%, 50%)',
-      label: 'En cours de discussion'
+      color: 'hsl(142, 71%, 45%)',
+      label: 'Active'
     },
     { 
-      name: 'Refusé', 
-      value: refusedCompanies, 
+      name: 'Inactive', 
+      value: inactiveCompanies, 
       color: 'hsl(0, 84%, 60%)',
-      label: 'Refusé'
+      label: 'Inactive'
     },
     { 
-      name: 'Relance', 
-      value: relanceCompanies, 
+      name: 'Former', 
+      value: formerCompanies, 
       color: 'hsl(45, 100%, 50%)',
-      label: 'Relance'
+      label: 'Former'
     }
   ].filter(item => item.value > 0);
 
@@ -97,15 +97,15 @@ export function Dashboard() {
       day: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
       companies: dayCompanies.length,
       prospects: dayCompanies.filter(c => c.status === 'PROSPECT').length,
-      enCours: dayCompanies.filter(c => c.status === 'EN_COURS').length
+      active: dayCompanies.filter(c => c.status === 'ACTIVE').length
     };
   });
 
   const chartConfig = {
     prospects: { label: 'Prospects', color: 'hsl(210, 100%, 50%)' },
-    enCours: { label: 'En cours', color: 'hsl(25, 100%, 50%)' },
-    refuse: { label: 'Refusé', color: 'hsl(0, 84%, 60%)' },
-    relance: { label: 'Relance', color: 'hsl(45, 100%, 50%)' }
+    active: { label: 'Active', color: 'hsl(142, 71%, 45%)' },
+    inactive: { label: 'Inactive', color: 'hsl(0, 84%, 60%)' },
+    former: { label: 'Former', color: 'hsl(45, 100%, 50%)' }
   };
 
   const recentCompanies = companies.slice(0, 5);
@@ -125,9 +125,9 @@ export function Dashboard() {
           trend={{ value: 12, isPositive: true }}
         />
         <StatsCard
-          title="En Cours"
+          title="Active"
           value={activeCompanies}
-          description="Discussions en cours"
+          description="Active companies"
           icon={Users}
           trend={{ value: 8, isPositive: true }}
         />
@@ -201,7 +201,7 @@ export function Dashboard() {
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="prospects" fill="var(--color-prospects)" name="Prospects" />
-                  <Bar dataKey="enCours" fill="var(--color-enCours)" name="En cours" />
+                  <Bar dataKey="active" fill="var(--color-active)" name="Active" />
                 </BarChart>
               </ChartContainer>
             )}
