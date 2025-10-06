@@ -31,19 +31,9 @@ The assignment system allows users to:
 - Role-based access control
 - Secure API endpoints
 
-## Project info
-
-**URL**: https://lovable.dev/projects/a53d3c9b-71f5-4b40-aed3-21a309469196
-
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/a53d3c9b-71f5-4b40-aed3-21a309469196) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
