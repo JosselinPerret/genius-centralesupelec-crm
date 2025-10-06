@@ -23,7 +23,6 @@ interface CompanyFormData {
   contact_email?: string;
   phone?: string;
   status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
-  notes?: string;
 }
 
 interface CompanyFormProps {
@@ -164,16 +163,6 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
                 placeholder="Entrez le numéro de téléphone"
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              {...register('notes')}
-              placeholder="Entrez des notes ou commentaires..."
-              rows={4}
-            />
           </div>
 
           <div className="space-y-2">

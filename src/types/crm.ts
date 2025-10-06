@@ -19,7 +19,6 @@ export interface Company {
   contact_email?: string;
   phone?: string;
   status: CompanyStatus;
-  notes?: string;
   created_at: string;
   updated_at: string;
 }

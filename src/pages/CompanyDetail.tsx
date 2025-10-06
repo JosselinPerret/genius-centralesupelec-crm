@@ -19,7 +19,6 @@ interface Company {
   contact_email?: string;
   phone?: string;
   status: 'PROSPECT' | 'REFUSE' | 'EN_COURS' | 'RELANCE';
-  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -280,13 +279,6 @@ export default function CompanyDetail() {
                 <div className="flex items-center space-x-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <span className="text-foreground">{company.phone}</span>
-                </div>
-              )}
-              
-              {company.notes && (
-                <div className="space-y-2">
-                  <span className="font-medium text-foreground">Notes :</span>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{company.notes}</p>
                 </div>
               )}
               
