@@ -31,6 +31,13 @@ import {
 } from '@/components/ui/dialog';
 import { StatusBadge } from '@/components/ui/status-badge';
 
+interface Profile {
+  id: string;
+  user_id: string;
+  name: string;
+  role: string;
+}
+
 export function AssignmentManager() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,8 +48,11 @@ export function AssignmentManager() {
   const [loading, setLoading] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<string>('CONTACT');
+  const [selectedUser, setSelectedUser] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
+  const [users, setUsers] = useState<Profile[]>([]);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
 
   const roles = [
     { value: 'CONTACT', label: 'Personne de contact' },
@@ -53,10 +63,47 @@ export function AssignmentManager() {
 
   useEffect(() => {
     if (user) {
+      fetchCurrentUserRole();
       fetchAssignments();
       fetchCompanies();
+      fetchUsers();
     }
   }, [user]);
+
+  const fetchCurrentUserRole = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setCurrentUserRole(data?.role || 'VOLUNTEER');
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      setCurrentUserRole('VOLUNTEER');
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast({
+        title: "Erreur",
+        description: "Échec du chargement des utilisateurs",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchAssignments = async () => {
     try {
@@ -122,12 +169,24 @@ export function AssignmentManager() {
   const handleAssignToCompany = async () => {
     if (!selectedCompany || !user) return;
 
+    const isAdminOrManager = currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER';
+    const targetUserId = isAdminOrManager && selectedUser ? selectedUser : user.id;
+
+    if (isAdminOrManager && !selectedUser) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('assignments')
         .insert({
           company_id: selectedCompany,
-          user_id: user.id,
+          user_id: targetUserId,
           role: selectedRole,
         });
 
@@ -140,8 +199,9 @@ export function AssignmentManager() {
 
       setSelectedCompany('');
       setSelectedRole('CONTACT');
+      setSelectedUser('');
       fetchAssignments();
-      fetchCompanies(); // Refresh to update available companies
+      fetchCompanies();
     } catch (error) {
       console.error('Error creating assignment:', error);
       toast({
@@ -271,8 +331,29 @@ export function AssignmentManager() {
               </Select>
             </div>
 
+            {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">Utilisateur</label>
+                <Select value={selectedUser} onValueChange={setSelectedUser}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un utilisateur" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((profile) => (
+                      <SelectItem key={profile.user_id} value={profile.user_id}>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span>{profile.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div>
-              <label className="text-sm font-medium mb-2 block">Rôle</label>
+              <label className="text-sm font-medium mb-2 block">Rôle dans l'entreprise</label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un rôle" />
@@ -290,7 +371,7 @@ export function AssignmentManager() {
             <div className="flex items-end">
               <Button 
                 onClick={handleAssignToCompany}
-                disabled={!selectedCompany}
+                disabled={!selectedCompany || ((currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && !selectedUser)}
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
