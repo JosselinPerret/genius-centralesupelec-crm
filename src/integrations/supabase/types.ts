@@ -260,7 +260,17 @@ export type Database = {
       }
     }
     Enums: {
-      company_status: "PROSPECT" | "ACTIVE" | "INACTIVE" | "FORMER"
+      company_status:
+        | "NOT_TO_CONTACT"
+        | "TO_CONTACT"
+        | "CONTACTED"
+        | "FIRST_FOLLOWUP"
+        | "SECOND_FOLLOWUP"
+        | "THIRD_FOLLOWUP"
+        | "IN_DISCUSSION"
+        | "COMING"
+        | "NOT_COMING"
+        | "NEXT_YEAR"
       user_role: "ADMIN" | "MANAGER" | "VOLUNTEER"
       user_role_new: "ADMIN" | "MANAGER" | "VOLUNTEER"
     }
@@ -390,7 +400,18 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      company_status: ["PROSPECT", "ACTIVE", "INACTIVE", "FORMER"],
+      company_status: [
+        "NOT_TO_CONTACT",
+        "TO_CONTACT",
+        "CONTACTED",
+        "FIRST_FOLLOWUP",
+        "SECOND_FOLLOWUP",
+        "THIRD_FOLLOWUP",
+        "IN_DISCUSSION",
+        "COMING",
+        "NOT_COMING",
+        "NEXT_YEAR",
+      ],
       user_role: ["ADMIN", "MANAGER", "VOLUNTEER"],
       user_role_new: ["ADMIN", "MANAGER", "VOLUNTEER"],
     },

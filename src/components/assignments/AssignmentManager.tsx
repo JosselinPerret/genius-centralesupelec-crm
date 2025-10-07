@@ -47,19 +47,11 @@ export function AssignmentManager() {
   const [availableCompanies, setAvailableCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<string>('CONTACT');
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
   const [users, setUsers] = useState<Profile[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
-
-  const roles = [
-    { value: 'CONTACT', label: 'Personne de contact' },
-    { value: 'COLLABORATOR', label: 'Collaborateur' },
-    { value: 'REPRESENTATIVE', label: 'Représentant' },
-    { value: 'CONSULTANT', label: 'Consultant' },
-  ];
 
   useEffect(() => {
     if (user) {
@@ -187,7 +179,7 @@ export function AssignmentManager() {
         .insert({
           company_id: selectedCompany,
           user_id: targetUserId,
-          role: selectedRole,
+          role: 'CONTACT',
         });
 
       if (error) throw error;
@@ -198,7 +190,6 @@ export function AssignmentManager() {
       });
 
       setSelectedCompany('');
-      setSelectedRole('CONTACT');
       setSelectedUser('');
       fetchAssignments();
       fetchCompanies();
@@ -308,7 +299,7 @@ export function AssignmentManager() {
             />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Entreprise</label>
               <Select value={selectedCompany} onValueChange={setSelectedCompany}>
@@ -321,9 +312,6 @@ export function AssignmentManager() {
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4" />
                         <span>{company.name}</span>
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {company.status}
-                        </span>
                       </div>
                     </SelectItem>
                   ))}
@@ -351,22 +339,6 @@ export function AssignmentManager() {
                 </Select>
               </div>
             )}
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Rôle dans l'entreprise</label>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un rôle" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="flex items-end">
               <Button 

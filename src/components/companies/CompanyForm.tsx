@@ -22,7 +22,7 @@ interface CompanyFormData {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
+  status: 'NOT_TO_CONTACT' | 'TO_CONTACT' | 'CONTACTED' | 'FIRST_FOLLOWUP' | 'SECOND_FOLLOWUP' | 'THIRD_FOLLOWUP' | 'IN_DISCUSSION' | 'COMING' | 'NOT_COMING' | 'NEXT_YEAR';
 }
 
 interface CompanyFormProps {
@@ -39,7 +39,7 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
   
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CompanyFormData>({
     defaultValues: company || {
-      status: 'PROSPECT',
+      status: 'TO_CONTACT',
     }
   });
 
@@ -128,10 +128,16 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
                   <SelectValue placeholder="Sélectionner un statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PROSPECT">Prospect</SelectItem>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="INACTIVE">Inactive</SelectItem>
-                  <SelectItem value="FORMER">Former</SelectItem>
+                  <SelectItem value="NOT_TO_CONTACT">N'est pas à démarcher</SelectItem>
+                  <SelectItem value="TO_CONTACT">A démarcher</SelectItem>
+                  <SelectItem value="CONTACTED">Contacté</SelectItem>
+                  <SelectItem value="FIRST_FOLLOWUP">1ère relance</SelectItem>
+                  <SelectItem value="SECOND_FOLLOWUP">2e relance</SelectItem>
+                  <SelectItem value="THIRD_FOLLOWUP">3e relance</SelectItem>
+                  <SelectItem value="IN_DISCUSSION">En discussion</SelectItem>
+                  <SelectItem value="COMING">Vient</SelectItem>
+                  <SelectItem value="NOT_COMING">Ne vient pas</SelectItem>
+                  <SelectItem value="NEXT_YEAR">Année prochaine</SelectItem>
                 </SelectContent>
               </Select>
             </div>

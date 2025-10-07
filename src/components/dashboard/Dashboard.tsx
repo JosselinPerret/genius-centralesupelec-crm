@@ -51,37 +51,37 @@ export function Dashboard() {
   };
 
   const totalCompanies = companies.length;
-  const activeCompanies = companies.filter(c => c.status === 'ACTIVE').length;
-  const prospects = companies.filter(c => c.status === 'PROSPECT').length;
-  const inactiveCompanies = companies.filter(c => c.status === 'INACTIVE').length;
-  const formerCompanies = companies.filter(c => c.status === 'FORMER').length;
+  const activeCompanies = companies.filter(c => c.status === 'COMING').length;
+  const prospects = companies.filter(c => c.status === 'TO_CONTACT').length;
+  const inDiscussion = companies.filter(c => c.status === 'IN_DISCUSSION').length;
+  const contacted = companies.filter(c => c.status === 'CONTACTED').length;
   const conversionRate = totalCompanies > 0 ? ((activeCompanies / totalCompanies) * 100).toFixed(1) : '0';
 
   // Data for charts
   const statusDistribution = [
     { 
-      name: 'Prospect', 
+      name: 'A démarcher', 
       value: prospects, 
       color: 'hsl(210, 100%, 50%)',
-      label: 'Prospects'
+      label: 'A démarcher'
     },
     { 
-      name: 'Active', 
+      name: 'Vient', 
       value: activeCompanies, 
       color: 'hsl(142, 71%, 45%)',
-      label: 'Active'
+      label: 'Vient'
     },
     { 
-      name: 'Inactive', 
-      value: inactiveCompanies, 
-      color: 'hsl(0, 84%, 60%)',
-      label: 'Inactive'
-    },
-    { 
-      name: 'Former', 
-      value: formerCompanies, 
+      name: 'En discussion', 
+      value: inDiscussion, 
       color: 'hsl(45, 100%, 50%)',
-      label: 'Former'
+      label: 'En discussion'
+    },
+    { 
+      name: 'Contacté', 
+      value: contacted, 
+      color: 'hsl(260, 100%, 50%)',
+      label: 'Contacté'
     }
   ].filter(item => item.value > 0);
 
@@ -96,16 +96,16 @@ export function Dashboard() {
     return {
       day: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
       companies: dayCompanies.length,
-      prospects: dayCompanies.filter(c => c.status === 'PROSPECT').length,
-      active: dayCompanies.filter(c => c.status === 'ACTIVE').length
+      toContact: dayCompanies.filter(c => c.status === 'TO_CONTACT').length,
+      coming: dayCompanies.filter(c => c.status === 'COMING').length
     };
   });
 
   const chartConfig = {
-    prospects: { label: 'Prospects', color: 'hsl(210, 100%, 50%)' },
-    active: { label: 'Active', color: 'hsl(142, 71%, 45%)' },
-    inactive: { label: 'Inactive', color: 'hsl(0, 84%, 60%)' },
-    former: { label: 'Former', color: 'hsl(45, 100%, 50%)' }
+    toContact: { label: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
+    coming: { label: 'Vient', color: 'hsl(142, 71%, 45%)' },
+    inDiscussion: { label: 'En discussion', color: 'hsl(45, 100%, 50%)' },
+    contacted: { label: 'Contacté', color: 'hsl(260, 100%, 50%)' }
   };
 
   const recentCompanies = companies.slice(0, 5);
@@ -125,14 +125,14 @@ export function Dashboard() {
           trend={{ value: 12, isPositive: true }}
         />
         <StatsCard
-          title="Active"
+          title="Vient"
           value={activeCompanies}
-          description="Active companies"
+          description="Entreprises confirmées"
           icon={Users}
           trend={{ value: 8, isPositive: true }}
         />
         <StatsCard
-          title="Prospects"
+          title="A démarcher"
           value={prospects}
           description="Nouveaux clients potentiels"
           icon={Target}
@@ -200,8 +200,8 @@ export function Dashboard() {
                   <XAxis dataKey="day" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="prospects" fill="var(--color-prospects)" name="Prospects" />
-                  <Bar dataKey="active" fill="var(--color-active)" name="Active" />
+                  <Bar dataKey="toContact" fill="var(--color-toContact)" name="A démarcher" />
+                  <Bar dataKey="coming" fill="var(--color-coming)" name="Vient" />
                 </BarChart>
               </ChartContainer>
             )}

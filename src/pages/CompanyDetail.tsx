@@ -18,7 +18,7 @@ interface Company {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: 'PROSPECT' | 'ACTIVE' | 'INACTIVE' | 'FORMER';
+  status: 'NOT_TO_CONTACT' | 'TO_CONTACT' | 'CONTACTED' | 'FIRST_FOLLOWUP' | 'SECOND_FOLLOWUP' | 'THIRD_FOLLOWUP' | 'IN_DISCUSSION' | 'COMING' | 'NOT_COMING' | 'NEXT_YEAR';
   booth_number?: string;
   booth_location?: string;
   booth_size?: string;
