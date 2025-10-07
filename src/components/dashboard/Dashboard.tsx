@@ -28,10 +28,12 @@ import {
 
 export function Dashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [previousCompanies, setPreviousCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadCompanies();
+    loadPreviousWeekCompanies();
   }, []);
 
   const loadCompanies = async () => {
@@ -50,12 +52,50 @@ export function Dashboard() {
     }
   };
 
+  const loadPreviousWeekCompanies = async () => {
+    try {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .lte('created_at', oneWeekAgo.toISOString());
+
+      if (error) throw error;
+      setPreviousCompanies(data || []);
+    } catch (error) {
+      console.error('Error loading previous companies:', error);
+    }
+  };
+
+  const calculateTrend = (current: number, previous: number): { value: number; isPositive: boolean } => {
+    if (previous === 0) return { value: current > 0 ? 100 : 0, isPositive: true };
+    const percentChange = ((current - previous) / previous) * 100;
+    return {
+      value: Math.abs(Math.round(percentChange)),
+      isPositive: percentChange >= 0
+    };
+  };
+
   const totalCompanies = companies.length;
   const activeCompanies = companies.filter(c => c.status === 'COMING').length;
   const prospects = companies.filter(c => c.status === 'TO_CONTACT').length;
   const inDiscussion = companies.filter(c => c.status === 'IN_DISCUSSION').length;
   const contacted = companies.filter(c => c.status === 'CONTACTED').length;
   const conversionRate = totalCompanies > 0 ? ((activeCompanies / totalCompanies) * 100).toFixed(1) : '0';
+
+  // Calculate previous week stats
+  const prevTotalCompanies = previousCompanies.length;
+  const prevActiveCompanies = previousCompanies.filter(c => c.status === 'COMING').length;
+  const prevProspects = previousCompanies.filter(c => c.status === 'TO_CONTACT').length;
+  const prevConversionRate = prevTotalCompanies > 0 ? ((prevActiveCompanies / prevTotalCompanies) * 100) : 0;
+
+  // Calculate trends
+  const totalTrend = calculateTrend(totalCompanies, prevTotalCompanies);
+  const activeTrend = calculateTrend(activeCompanies, prevActiveCompanies);
+  const prospectsTrend = calculateTrend(prospects, prevProspects);
+  const conversionTrend = calculateTrend(parseFloat(conversionRate), prevConversionRate);
 
   // Data for charts
   const statusDistribution = [
@@ -122,28 +162,28 @@ export function Dashboard() {
           value={totalCompanies}
           description="Toutes les entreprises enregistrées"
           icon={Building2}
-          trend={{ value: 12, isPositive: true }}
+          trend={totalTrend}
         />
         <StatsCard
           title="Vient"
           value={activeCompanies}
           description="Entreprises confirmées"
           icon={Users}
-          trend={{ value: 8, isPositive: true }}
+          trend={activeTrend}
         />
         <StatsCard
           title="A démarcher"
           value={prospects}
           description="Nouveaux clients potentiels"
           icon={Target}
-          trend={{ value: -2, isPositive: false }}
+          trend={prospectsTrend}
         />
         <StatsCard
           title="Taux de Conversion"
           value={`${conversionRate}%`}
-          description="Ratio prospect vers actif"
+          description="Ratio vers confirmation"
           icon={TrendingUp}
-          trend={{ value: 3, isPositive: true }}
+          trend={conversionTrend}
         />
       </div>
 

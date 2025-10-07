@@ -27,9 +27,9 @@ export function StatsCard({ title, value, description, icon: Icon, trend }: Stat
         {trend && (
           <div className="flex items-center mt-1">
             <span className={`text-xs ${trend.isPositive ? 'text-success' : 'text-destructive'}`}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
+              {trend.isPositive ? '+' : '-'}{trend.value}%
             </span>
-            <span className="text-xs text-muted-foreground ml-1">from last month</span>
+            <span className="text-xs text-muted-foreground ml-1">par rapport à la semaine dernière</span>
           </div>
         )}
       </CardContent>
