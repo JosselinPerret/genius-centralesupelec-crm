@@ -252,7 +252,7 @@ export function CompanyTable() {
     filters.tagId !== 'all' || 
     filters.assignmentFilter !== 'all';
 
-  const canManageCompanies = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
+  const canManageCompanies = true; // Everyone can manage companies now
   const canDeleteCompanies = profile?.role === 'ADMIN';
 
   if (isAdding) {
@@ -332,10 +332,16 @@ export function CompanyTable() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Tous les statuts</SelectItem>
-                          <SelectItem value="PROSPECT">Prospect</SelectItem>
-                          <SelectItem value="REFUSE">Refusé</SelectItem>
-                          <SelectItem value="EN_COURS">En cours de discussion</SelectItem>
-                          <SelectItem value="RELANCE">Relance</SelectItem>
+                          <SelectItem value="NOT_TO_CONTACT">N'est pas à démarcher</SelectItem>
+                          <SelectItem value="TO_CONTACT">A démarcher</SelectItem>
+                          <SelectItem value="CONTACTED">Contacté</SelectItem>
+                          <SelectItem value="FIRST_FOLLOWUP">1ère relance</SelectItem>
+                          <SelectItem value="SECOND_FOLLOWUP">2e relance</SelectItem>
+                          <SelectItem value="THIRD_FOLLOWUP">3e relance</SelectItem>
+                          <SelectItem value="IN_DISCUSSION">En discussion</SelectItem>
+                          <SelectItem value="COMING">Vient</SelectItem>
+                          <SelectItem value="NOT_COMING">Ne vient pas</SelectItem>
+                          <SelectItem value="NEXT_YEAR">Année prochaine</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -507,14 +513,12 @@ export function CompanyTable() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
                               <Eye className="mr-2 h-4 w-4" />
-                              View Details
+                              Voir les détails
                             </DropdownMenuItem>
-                            {canManageCompanies && (
-                              <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Modifier
+                            </DropdownMenuItem>
                             {canDeleteCompanies && (
                               <DropdownMenuItem 
                                 className="text-destructive"

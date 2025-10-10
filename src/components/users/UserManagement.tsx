@@ -57,22 +57,31 @@ export function UserManagement() {
   const updateUserRole = async (userId: string, newRole: 'ADMIN' | 'MANAGER' | 'VOLUNTEER') => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // Update in user_roles table
+      const { error: rolesError } = await supabase
+        .from('user_roles')
+        .update({ role: newRole })
+        .eq('user_id', userId);
+
+      if (rolesError) throw rolesError;
+
+      // Also update in profiles table for consistency
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({ role: newRole })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
       loadProfiles();
       
       toast({
-        title: "Role updated",
-        description: "User role has been updated successfully.",
+        title: "Rôle mis à jour",
+        description: "Le rôle de l'utilisateur a été mis à jour avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });

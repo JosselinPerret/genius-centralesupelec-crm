@@ -1,8 +1,9 @@
-import { Building2, LayoutDashboard, Users, Tag, Settings, LogOut, UserCheck } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   activeTab: string;
@@ -19,6 +20,10 @@ const navigation = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
+
   return (
     <div className="flex h-full w-64 flex-col bg-card border-r border-border">
       <div className="flex h-16 items-center border-b border-border px-6">
@@ -53,13 +58,31 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             </Button>
           );
         })}
+        
+        <div className="pt-4 mt-4 border-t border-border">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => navigate('/my-statistics')}
+          >
+            <UserCircle className="mr-3 h-5 w-5" />
+            Mes Statistiques
+          </Button>
+          
+          {canViewUserStats && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={() => navigate('/user-statistics')}
+            >
+              <BarChart3 className="mr-3 h-5 w-5" />
+              Stats Utilisateurs
+            </Button>
+          )}
+        </div>
       </nav>
 
       <div className="border-t border-border p-3 space-y-1">
-        <Button variant="ghost" className="w-full justify-start">
-          <Settings className="mr-3 h-5 w-5" />
-          Paramètres
-        </Button>
         <Button 
           variant="ghost" 
           className="w-full justify-start text-destructive hover:text-destructive"
