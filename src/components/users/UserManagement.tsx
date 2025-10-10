@@ -57,32 +57,49 @@ export function UserManagement() {
   const updateUserRole = async (userId: string, newRole: 'ADMIN' | 'MANAGER' | 'VOLUNTEER') => {
     setIsLoading(true);
     try {
-      // Update in user_roles table
-      const { error: rolesError } = await supabase
+      // Update in user_roles table (uses user_role_new enum)
+      const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .update({ role: newRole })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        console.error('Error updating user_roles:', rolesError);
+        throw rolesError;
+      }
+      
+      if (!rolesData || rolesData.length === 0) {
+        throw new Error('Aucune ligne mise à jour dans user_roles');
+      }
 
-      // Also update in profiles table for consistency
-      const { error: profileError } = await supabase
+      // Also update in profiles table for consistency (uses user_role enum)
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .update({ role: newRole })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Error updating profiles:', profileError);
+        throw profileError;
+      }
+      
+      if (!profileData || profileData.length === 0) {
+        throw new Error('Aucune ligne mise à jour dans profiles');
+      }
 
-      loadProfiles();
+      await loadProfiles();
       
       toast({
         title: "Rôle mis à jour",
         description: "Le rôle de l'utilisateur a été mis à jour avec succès.",
       });
     } catch (error: any) {
+      console.error('Error in updateUserRole:', error);
       toast({
         title: "Erreur",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la mise à jour du rôle",
         variant: "destructive",
       });
     } finally {
