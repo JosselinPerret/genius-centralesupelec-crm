@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Target, TrendingUp, Users } from 'lucide-react';
+import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { Navigate } from 'react-router-dom';
 
 interface Profile {
   id: string;
@@ -26,6 +26,7 @@ interface Company {
 export default function UserStatistics() {
   const { userId } = useParams();
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<Profile[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>(userId || '');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
@@ -121,7 +122,18 @@ export default function UserStatistics() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Statistiques Utilisateur</h1>
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour à l'accueil
+          </Button>
+          <h1 className="text-3xl font-bold text-foreground">Statistiques Utilisateur</h1>
+        </div>
       </div>
 
       <Card className="shadow-card">
@@ -189,7 +201,11 @@ export default function UserStatistics() {
               ) : (
                 <div className="space-y-4">
                   {companies.map((company) => (
-                    <div key={company.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+                    <Link
+                      key={company.id}
+                      to={`/company/${company.id}`}
+                      className="flex items-center justify-between border-b border-border pb-3 last:border-0 hover:bg-accent/50 transition-colors p-2 rounded -m-2"
+                    >
                       <div>
                         <p className="font-medium text-foreground">{company.name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -197,7 +213,7 @@ export default function UserStatistics() {
                         </p>
                       </div>
                       <StatusBadge status={company.status as any} />
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

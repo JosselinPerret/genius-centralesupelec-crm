@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Target, TrendingUp, Users } from 'lucide-react';
+import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
+import { Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { 
   ChartContainer, 
@@ -25,6 +27,7 @@ interface Company {
 
 export default function MyStatistics() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -108,6 +111,15 @@ export default function MyStatistics() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="mb-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour à l'accueil
+          </Button>
           <h1 className="text-3xl font-bold text-foreground">Mes Statistiques</h1>
           <p className="text-muted-foreground mt-1">
             {profile?.name} - {profile?.role}
@@ -225,7 +237,11 @@ export default function MyStatistics() {
           ) : (
             <div className="space-y-4">
               {companies.map((company) => (
-                <div key={company.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
+                <Link
+                  key={company.id}
+                  to={`/company/${company.id}`}
+                  className="flex items-center justify-between border-b border-border pb-3 last:border-0 hover:bg-accent/50 transition-colors p-2 rounded -m-2"
+                >
                   <div>
                     <p className="font-medium text-foreground">{company.name}</p>
                     <p className="text-sm text-muted-foreground">
@@ -233,7 +249,7 @@ export default function MyStatistics() {
                     </p>
                   </div>
                   <StatusBadge status={company.status as any} />
-                </div>
+                </Link>
               ))}
             </div>
           )}
