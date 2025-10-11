@@ -166,14 +166,14 @@ export default function CompanyDetail() {
           .insert(tagInserts);
       }
 
-      setIsEditing(false);
-      loadCompany();
-      loadCompanyTags();
-      
-      toast({
-        title: "Entreprise mise à jour",
-        description: "L'entreprise a été mise à jour avec succès.",
-      });
+    await loadCompany();
+    await loadCompanyTags();
+    setIsEditing(false);
+    
+    toast({
+      title: "Entreprise mise à jour",
+      description: "L'entreprise a été mise à jour avec succès.",
+    });
     } catch (error: any) {
       toast({
         title: "Erreur",
