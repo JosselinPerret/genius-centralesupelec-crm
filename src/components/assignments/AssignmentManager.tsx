@@ -289,34 +289,45 @@ export function AssignmentManager() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher des entreprises..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-xs"
-            />
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Entreprise</label>
-              <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une entreprise" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredAvailableCompanies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        <span>{company.name}</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher des entreprises..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <Select 
+                  value={selectedCompany} 
+                  onValueChange={setSelectedCompany}
+                  key={searchTerm}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une entreprise" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredAvailableCompanies.length === 0 ? (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        Aucune entreprise trouvée
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    ) : (
+                      filteredAvailableCompanies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4" />
+                            <span>{company.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && (
@@ -461,18 +472,6 @@ export function AssignmentManager() {
           )}
         </CardContent>
       </Card>
-
-      {filteredAvailableCompanies.length === 0 && searchTerm && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">Aucune entreprise trouvée</h3>
-            <p className="text-muted-foreground">
-              Aucune entreprise ne correspond à vos critères de recherche. Essayez un autre terme de recherche.
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Company Information Dialog */}
       <Dialog open={!!viewingCompany} onOpenChange={() => setViewingCompany(null)}>
