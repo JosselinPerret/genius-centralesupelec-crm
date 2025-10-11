@@ -69,6 +69,15 @@ export function CompanyTable() {
   useEffect(() => {
     loadCompanies();
     loadTags();
+
+    // Reload data when window gains focus (user comes back from detail page)
+    const handleFocus = () => {
+      loadCompanies();
+      loadTags();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const loadCompanies = async () => {

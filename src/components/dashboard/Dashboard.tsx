@@ -97,33 +97,26 @@ export function Dashboard() {
   const prospectsTrend = calculateTrend(prospects, prevProspects);
   const conversionTrend = calculateTrend(parseFloat(conversionRate), prevConversionRate);
 
-  // Data for charts
-  const statusDistribution = [
-    { 
-      name: 'A démarcher', 
-      value: prospects, 
-      color: 'hsl(210, 100%, 50%)',
-      label: 'A démarcher'
-    },
-    { 
-      name: 'Vient', 
-      value: activeCompanies, 
-      color: 'hsl(142, 71%, 45%)',
-      label: 'Vient'
-    },
-    { 
-      name: 'En discussion', 
-      value: inDiscussion, 
-      color: 'hsl(45, 100%, 50%)',
-      label: 'En discussion'
-    },
-    { 
-      name: 'Contacté', 
-      value: contacted, 
-      color: 'hsl(260, 100%, 50%)',
-      label: 'Contacté'
-    }
-  ].filter(item => item.value > 0);
+  // Data for charts - Show ALL statuses
+  const allStatuses = {
+    'NOT_TO_CONTACT': { name: 'Ne pas contacter', color: 'hsl(0, 0%, 50%)' },
+    'TO_CONTACT': { name: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
+    'CONTACTED': { name: 'Contacté', color: 'hsl(260, 60%, 50%)' },
+    'FIRST_FOLLOWUP': { name: '1ère relance', color: 'hsl(280, 60%, 50%)' },
+    'SECOND_FOLLOWUP': { name: '2ème relance', color: 'hsl(300, 60%, 50%)' },
+    'THIRD_FOLLOWUP': { name: '3ème relance', color: 'hsl(320, 60%, 50%)' },
+    'IN_DISCUSSION': { name: 'En discussion', color: 'hsl(45, 100%, 50%)' },
+    'COMING': { name: 'Vient', color: 'hsl(142, 71%, 45%)' },
+    'NOT_COMING': { name: 'Ne vient pas', color: 'hsl(0, 71%, 50%)' },
+    'NEXT_YEAR': { name: 'Année prochaine', color: 'hsl(200, 60%, 50%)' }
+  };
+
+  const statusDistribution = Object.entries(allStatuses).map(([status, info]) => ({
+    name: info.name,
+    value: companies.filter(c => c.status === status).length,
+    color: info.color,
+    label: info.name
+  }));
 
   // Activity data (last 7 days)
   const activityData = Array.from({ length: 7 }, (_, i) => {
@@ -198,28 +191,24 @@ export function Dashboard() {
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
-            ) : statusDistribution.length > 0 ? (
+            ) : (
               <ChartContainer config={chartConfig} className="h-[300px]">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Pie
-                    data={statusDistribution}
+                    data={statusDistribution.filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}`}
                   >
-                    {statusDistribution.map((entry, index) => (
+                    {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                 </PieChart>
               </ChartContainer>
-            ) : (
-              <p className="text-muted-foreground text-sm text-center py-8">
-                Aucune donnée disponible
-              </p>
             )}
           </CardContent>
         </Card>
@@ -295,20 +284,18 @@ export function Dashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {Object.entries(
-                  companies.reduce((acc, company) => {
-                    acc[company.status] = (acc[company.status] || 0) + 1;
-                    return acc;
-                  }, {} as Record<string, number>)
-                ).map(([status, count]) => (
-                  <div key={status} className="flex items-center justify-between">
-                    <StatusBadge status={status as any} />
-                    <span className="font-medium text-foreground">{count}</span>
+                {statusDistribution.map((status) => (
+                  <div key={status.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: status.color }}
+                      />
+                      <span className="text-sm text-foreground">{status.name}</span>
+                    </div>
+                    <span className="font-medium text-foreground">{status.value}</span>
                   </div>
                 ))}
-                {companies.length === 0 && (
-                  <p className="text-muted-foreground text-sm">Aucune entreprise pour le moment</p>
-                )}
               </div>
             )}
           </CardContent>
