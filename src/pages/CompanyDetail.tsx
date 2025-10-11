@@ -185,7 +185,7 @@ export default function CompanyDetail() {
     }
   };
 
-  const canEdit = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
+  const canEdit = profile?.role === 'ADMIN' || profile?.role === 'MANAGER' || profile?.role === 'VOLUNTEER';
 
   if (isLoading) {
     return (
