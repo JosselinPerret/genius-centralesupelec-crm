@@ -62,7 +62,7 @@ export default function CompanyDetail() {
     }
   }, [id]);
 
-  const loadCompany = async () => {
+  const loadCompany = async (updateLoadingState = true) => {
     if (!id) return;
     
     try {
@@ -83,7 +83,9 @@ export default function CompanyDetail() {
       });
       navigate('/?tab=companies');
     } finally {
-      setIsLoading(false);
+      if (updateLoadingState) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -166,8 +168,9 @@ export default function CompanyDetail() {
           .insert(tagInserts);
       }
 
-    await loadCompany();
+    await loadCompany(false);
     await loadCompanyTags();
+    await loadCompanyAssignments();
     setIsEditing(false);
     
     toast({
