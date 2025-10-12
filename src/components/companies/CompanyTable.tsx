@@ -31,6 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CompanyForm } from './CompanyForm';
+import { CsvImport } from './CsvImport';
 
 interface Tag {
   id: string;
@@ -279,10 +280,12 @@ export function CompanyTable() {
   }
 
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Companies</CardTitle>
+    <>
+      <CsvImport onImportComplete={loadCompanies} />
+      <Card className="shadow-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Companies</CardTitle>
           {canManageCompanies && (
             <Button 
               className="bg-primary hover:bg-primary/90"
@@ -549,5 +552,6 @@ export function CompanyTable() {
         )}
       </CardContent>
     </Card>
+    </>
   );
 }
