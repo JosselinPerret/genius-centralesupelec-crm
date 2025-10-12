@@ -8,6 +8,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from '@/components/ui/chart';
+import { 
+  PieChart, 
+  Pie, 
+  Cell 
+} from 'recharts';
 
 interface Profile {
   id: string;
@@ -119,6 +129,26 @@ export default function UserStatistics() {
   const inDiscussion = companies.filter(c => c.status === 'IN_DISCUSSION').length;
   const conversionRate = totalAssigned > 0 ? ((coming / totalAssigned) * 100).toFixed(1) : '0';
 
+  const allStatuses = {
+    'NOT_TO_CONTACT': { name: 'Ne pas contacter', color: 'hsl(0, 0%, 50%)' },
+    'TO_CONTACT': { name: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
+    'CONTACTED': { name: 'Contacté', color: 'hsl(260, 60%, 50%)' },
+    'FIRST_FOLLOWUP': { name: '1ère relance', color: 'hsl(280, 60%, 50%)' },
+    'SECOND_FOLLOWUP': { name: '2ème relance', color: 'hsl(300, 60%, 50%)' },
+    'THIRD_FOLLOWUP': { name: '3ème relance', color: 'hsl(320, 60%, 50%)' },
+    'IN_DISCUSSION': { name: 'En discussion', color: 'hsl(45, 100%, 50%)' },
+    'COMING': { name: 'Vient', color: 'hsl(142, 71%, 45%)' },
+    'NOT_COMING': { name: 'Ne vient pas', color: 'hsl(0, 71%, 50%)' },
+    'NEXT_YEAR': { name: 'Année prochaine', color: 'hsl(200, 60%, 50%)' }
+  };
+
+  const statusDistribution = Object.entries(allStatuses).map(([status, info]) => ({
+    name: info.name,
+    value: companies.filter(c => c.status === status).length,
+    color: info.color,
+    label: info.name
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -183,6 +213,72 @@ export default function UserStatistics() {
               description="Ratio de succès"
               icon={TrendingUp}
             />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Répartition des Statuts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <ChartContainer config={{}} className="h-[300px]">
+                    <PieChart>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Pie
+                        data={statusDistribution.filter(item => item.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}`}
+                      >
+                        {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ChartContainer>
+                )}
+                {companies.length === 0 && !isLoading && (
+                  <p className="text-muted-foreground text-sm text-center py-8">
+                    Aucune donnée disponible
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle>Détail des Statuts</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {statusDistribution.map((status) => (
+                      <div key={status.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: status.color }}
+                          />
+                          <span className="text-sm text-foreground">{status.name}</span>
+                        </div>
+                        <span className="font-medium text-foreground">{status.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           <Card className="shadow-card">

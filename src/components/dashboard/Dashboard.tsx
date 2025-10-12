@@ -129,16 +129,20 @@ export function Dashboard() {
     return {
       day: date.toLocaleDateString('fr-FR', { weekday: 'short' }),
       companies: dayCompanies.length,
-      toContact: dayCompanies.filter(c => c.status === 'TO_CONTACT').length,
-      coming: dayCompanies.filter(c => c.status === 'COMING').length
+      contacted: dayCompanies.filter(c => c.status === 'CONTACTED').length,
+      inDiscussion: dayCompanies.filter(c => c.status === 'IN_DISCUSSION').length,
+      coming: dayCompanies.filter(c => c.status === 'COMING').length,
+      notComing: dayCompanies.filter(c => c.status === 'NOT_COMING').length,
+      nextYear: dayCompanies.filter(c => c.status === 'NEXT_YEAR').length
     };
   });
 
   const chartConfig = {
-    toContact: { label: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
-    coming: { label: 'Vient', color: 'hsl(142, 71%, 45%)' },
+    contacted: { label: 'Contacté', color: 'hsl(260, 60%, 50%)' },
     inDiscussion: { label: 'En discussion', color: 'hsl(45, 100%, 50%)' },
-    contacted: { label: 'Contacté', color: 'hsl(260, 100%, 50%)' }
+    coming: { label: 'Vient', color: 'hsl(142, 71%, 45%)' },
+    notComing: { label: 'Ne vient pas', color: 'hsl(0, 71%, 50%)' },
+    nextYear: { label: 'Année prochaine', color: 'hsl(200, 60%, 50%)' }
   };
 
   const recentCompanies = companies.slice(0, 5);
@@ -229,8 +233,11 @@ export function Dashboard() {
                   <XAxis dataKey="day" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="toContact" fill="var(--color-toContact)" name="A démarcher" />
+                  <Bar dataKey="contacted" fill="var(--color-contacted)" name="Contacté" />
+                  <Bar dataKey="inDiscussion" fill="var(--color-inDiscussion)" name="En discussion" />
                   <Bar dataKey="coming" fill="var(--color-coming)" name="Vient" />
+                  <Bar dataKey="notComing" fill="var(--color-notComing)" name="Ne vient pas" />
+                  <Bar dataKey="nextYear" fill="var(--color-nextYear)" name="Année prochaine" />
                 </BarChart>
               </ChartContainer>
             )}
