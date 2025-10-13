@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MapPin, Phone, Mail, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Edit, MapPin, Phone, Mail, Calendar, User, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { NotesSection } from '@/components/notes/NotesSection';
@@ -51,8 +51,10 @@ export default function CompanyDetail() {
   const [assignments, setAssignments] = useState<AssignedUser[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { toast } = useToast();
+
+  const isCurrentUserAssigned = assignments.some(a => a.profiles.id === user?.id);
 
   useEffect(() => {
     if (id) {
@@ -185,6 +187,35 @@ export default function CompanyDetail() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAssignSelf = async () => {
+    if (!user || !company) return;
+
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .insert({
+          company_id: company.id,
+          user_id: user.id,
+          role: 'CONTACT'
+        });
+
+      if (error) throw error;
+
+      await loadCompanyAssignments();
+      
+      toast({
+        title: "Assignation réussie",
+        description: "Vous avez été assigné à cette entreprise.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -325,10 +356,18 @@ export default function CompanyDetail() {
 
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Utilisateurs assignés ({assignments.length})
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Utilisateurs assignés ({assignments.length})
+                </CardTitle>
+                {!isCurrentUserAssigned && (
+                  <Button size="sm" onClick={handleAssignSelf}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    M'assigner
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {assignments.length === 0 ? (
@@ -345,6 +384,11 @@ export default function CompanyDetail() {
                         <div>
                           <p className="font-medium text-foreground">
                             {assignment.profiles.name}
+                            {assignment.profiles.id === user?.id && (
+                              <Badge variant="outline" className="ml-2 text-primary border-primary">
+                                Vous
+                              </Badge>
+                            )}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="secondary">

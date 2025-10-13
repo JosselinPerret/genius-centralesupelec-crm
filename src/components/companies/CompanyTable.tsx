@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Company } from '@/types/crm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +63,9 @@ export function CompanyTable() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 20;
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { toast } = useToast();
@@ -79,14 +82,26 @@ export function CompanyTable() {
     
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+  }, [currentPage]);
 
   const loadCompanies = async () => {
     try {
+      // Get total count
+      const { count } = await supabase
+        .from('companies')
+        .select('*', { count: 'exact', head: true });
+
+      setTotalCount(count || 0);
+
+      // Get paginated data
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
       const { data: companiesData, error } = await supabase
         .from('companies')
         .select('*')
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -255,6 +270,7 @@ export function CompanyTable() {
       tagId: 'all',
       assignmentFilter: 'all'
     });
+    setCurrentPage(1);
   };
 
   const hasActiveFilters = filters.searchTerm !== '' || 
@@ -548,6 +564,37 @@ export function CompanyTable() {
                 )}
               </TableBody>
             </Table>
+          </div>
+        )}
+        
+        {!isLoading && totalCount > itemsPerPage && (
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-sm text-muted-foreground">
+              Affichage de {((currentPage - 1) * itemsPerPage) + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} sur {Math.ceil(totalCount / itemsPerPage)}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
