@@ -104,10 +104,13 @@ export function CompanyTable() {
       const { count } = await query;
       setTotalCount(count || 0);
 
-      // Get paginated data with filters
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
+      // Check if any filters are active
+      const hasFilters = filters.searchTerm !== '' || 
+        filters.status !== 'all' || 
+        filters.tagId !== 'all' || 
+        filters.assignmentFilter !== 'all';
 
+      // Get data with filters - if filters active, get all results, otherwise paginate
       let dataQuery = supabase.from('companies').select('*');
 
       // Apply same filters
@@ -118,9 +121,15 @@ export function CompanyTable() {
         dataQuery = dataQuery.eq('status', filters.status as any);
       }
 
+      // Apply pagination only if no filters
+      if (!hasFilters) {
+        const from = (currentPage - 1) * itemsPerPage;
+        const to = from + itemsPerPage - 1;
+        dataQuery = dataQuery.range(from, to);
+      }
+
       const { data: companiesData, error } = await dataQuery
-        .order('updated_at', { ascending: false })
-        .range(from, to);
+        .order('updated_at', { ascending: false });
 
       if (error) throw error;
 
@@ -592,7 +601,7 @@ export function CompanyTable() {
           </div>
         )}
         
-        {!isLoading && totalCount > itemsPerPage && (
+        {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && (
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
               Affichage de {((currentPage - 1) * itemsPerPage) + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
@@ -620,6 +629,13 @@ export function CompanyTable() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+        )}
+        {!isLoading && hasActiveFilters && (
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground">
+              {filteredCompanies.length} entreprise{filteredCompanies.length !== 1 ? 's' : ''} trouvée{filteredCompanies.length !== 1 ? 's' : ''}
+            </p>
           </div>
         )}
       </CardContent>
