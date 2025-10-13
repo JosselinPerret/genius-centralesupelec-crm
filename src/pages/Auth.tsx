@@ -70,7 +70,7 @@ export default function Auth() {
                     <Input id="signin-email" name="email" type="email" placeholder="john@example.com" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
+                    <Label htmlFor="signin-password">Mot de passe</Label>
                     <Input id="signin-password" name="password" type="password" required />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
