@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,43 +9,30 @@ import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft
 import { Company } from '@/types/crm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CompanyForm } from './CompanyForm';
 import { CsvImport } from './CsvImport';
-
 interface Tag {
   id: string;
   name: string;
   color: string;
 }
-
 interface CompanyWithTags extends Company {
   tags?: Tag[];
   assignedUsers?: number;
   hasCurrentUserAssignment?: boolean;
   _matchesFilters?: boolean;
 }
-
 type SearchFilters = {
   searchTerm: string;
   status: string;
   tagId: string;
   assignmentFilter: string; // 'all', 'assigned', 'unassigned', 'my-assignments'
 };
-
 export function CompanyTable() {
   const [companies, setCompanies] = useState<CompanyWithTags[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
@@ -68,9 +48,13 @@ export function CompanyTable() {
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20;
   const navigate = useNavigate();
-  const { profile, user } = useAuth();
-  const { toast } = useToast();
-
+  const {
+    profile,
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     loadCompanies();
     loadTags();
@@ -80,15 +64,15 @@ export function CompanyTable() {
       loadCompanies();
       loadTags();
     };
-    
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, [currentPage, filters]);
-
   const loadCompanies = async () => {
     try {
       // Build base query
-      let query = supabase.from('companies').select('*', { count: 'exact' });
+      let query = supabase.from('companies').select('*', {
+        count: 'exact'
+      });
 
       // Apply search filter
       if (filters.searchTerm) {
@@ -101,14 +85,13 @@ export function CompanyTable() {
       }
 
       // Get count with filters
-      const { count } = await query;
+      const {
+        count
+      } = await query;
       setTotalCount(count || 0);
 
       // Check if any filters are active
-      const hasFilters = filters.searchTerm !== '' || 
-        filters.status !== 'all' || 
-        filters.tagId !== 'all' || 
-        filters.assignmentFilter !== 'all';
+      const hasFilters = filters.searchTerm !== '' || filters.status !== 'all' || filters.tagId !== 'all' || filters.assignmentFilter !== 'all';
 
       // Get data with filters - if filters active, get all results, otherwise paginate
       let dataQuery = supabase.from('companies').select('*');
@@ -127,67 +110,61 @@ export function CompanyTable() {
         const to = from + itemsPerPage - 1;
         dataQuery = dataQuery.range(from, to);
       }
-
-      const { data: companiesData, error } = await dataQuery
-        .order('updated_at', { ascending: false });
-
+      const {
+        data: companiesData,
+        error
+      } = await dataQuery.order('updated_at', {
+        ascending: false
+      });
       if (error) throw error;
 
       // Load tags for each company and assignment counts
-      const companiesWithTags = await Promise.all(
-        (companiesData || []).map(async (company) => {
-          // Load tags
-          const { data: tagData } = await supabase
-            .from('company_tags')
-            .select(`
+      const companiesWithTags = await Promise.all((companiesData || []).map(async company => {
+        // Load tags
+        const {
+          data: tagData
+        } = await supabase.from('company_tags').select(`
               tags:tag_id (
                 id,
                 name,
                 color
               )
-            `)
-            .eq('company_id', company.id);
+            `).eq('company_id', company.id);
 
-          // Load assignment count and check if current user is assigned
-          const { data: assignmentData } = await supabase
-            .from('assignments')
-            .select('user_id')
-            .eq('company_id', company.id);
+        // Load assignment count and check if current user is assigned
+        const {
+          data: assignmentData
+        } = await supabase.from('assignments').select('user_id').eq('company_id', company.id);
+        const assignedUsers = assignmentData?.length || 0;
+        const hasCurrentUserAssignment = user ? assignmentData?.some(a => a.user_id === user.id) || false : false;
 
-          const assignedUsers = assignmentData?.length || 0;
-          const hasCurrentUserAssignment = user ? 
-            assignmentData?.some(a => a.user_id === user.id) || false : false;
+        // Apply tag filter
+        const companyTags = tagData?.map((ct: any) => ct.tags).filter(Boolean) || [];
+        const matchesTag = filters.tagId === 'all' || companyTags.some(tag => tag.id === filters.tagId);
 
-          // Apply tag filter
-          const companyTags = tagData?.map((ct: any) => ct.tags).filter(Boolean) || [];
-          const matchesTag = filters.tagId === 'all' || 
-            companyTags.some(tag => tag.id === filters.tagId);
-
-          // Apply assignment filter
-          let matchesAssignment = true;
-          switch (filters.assignmentFilter) {
-            case 'assigned':
-              matchesAssignment = assignedUsers > 0;
-              break;
-            case 'unassigned':
-              matchesAssignment = assignedUsers === 0;
-              break;
-            case 'my-assignments':
-              matchesAssignment = hasCurrentUserAssignment;
-              break;
-            default:
-              matchesAssignment = true;
-          }
-
-          return {
-            ...company,
-            tags: companyTags,
-            assignedUsers,
-            hasCurrentUserAssignment,
-            _matchesFilters: matchesTag && matchesAssignment
-          };
-        })
-      );
+        // Apply assignment filter
+        let matchesAssignment = true;
+        switch (filters.assignmentFilter) {
+          case 'assigned':
+            matchesAssignment = assignedUsers > 0;
+            break;
+          case 'unassigned':
+            matchesAssignment = assignedUsers === 0;
+            break;
+          case 'my-assignments':
+            matchesAssignment = hasCurrentUserAssignment;
+            break;
+          default:
+            matchesAssignment = true;
+        }
+        return {
+          ...company,
+          tags: companyTags,
+          assignedUsers,
+          hasCurrentUserAssignment,
+          _matchesFilters: matchesTag && matchesAssignment
+        };
+      }));
 
       // Filter out companies that don't match tag/assignment filters
       const filteredCompanies = companiesWithTags.filter(c => c._matchesFilters);
@@ -197,94 +174,77 @@ export function CompanyTable() {
       toast({
         title: "Error",
         description: "Failed to load companies",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const loadTags = async () => {
     try {
-      const { data, error } = await supabase
-        .from('tags')
-        .select('*')
-        .order('name');
-
+      const {
+        data,
+        error
+      } = await supabase.from('tags').select('*').order('name');
       if (error) throw error;
       setAllTags(data || []);
     } catch (error) {
       console.error('Error loading tags:', error);
     }
   };
-
   const handleCreateCompany = async (formData: any, tagIds: string[]) => {
     try {
-      const { data: company, error } = await supabase
-        .from('companies')
-        .insert(formData)
-        .select()
-        .single();
-
+      const {
+        data: company,
+        error
+      } = await supabase.from('companies').insert(formData).select().single();
       if (error) throw error;
 
       // Add tags if any
       if (tagIds.length > 0) {
         const tagInserts = tagIds.map(tagId => ({
           company_id: company.id,
-          tag_id: tagId,
+          tag_id: tagId
         }));
-        
-        await supabase
-          .from('company_tags')
-          .insert(tagInserts);
+        await supabase.from('company_tags').insert(tagInserts);
       }
-
       setIsAdding(false);
       loadCompanies();
-      
       toast({
         title: "Company created",
-        description: "The company has been created successfully.",
+        description: "The company has been created successfully."
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDeleteCompany = async (companyId: string) => {
     if (!confirm('Are you sure you want to delete this company? This action cannot be undone.')) return;
-    
     try {
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyId);
-
+      const {
+        error
+      } = await supabase.from('companies').delete().eq('id', companyId);
       if (error) throw error;
-
       loadCompanies();
-      
       toast({
         title: "Company deleted",
-        description: "The company has been deleted successfully.",
+        description: "The company has been deleted successfully."
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
 
   // Companies are already filtered server-side
   const filteredCompanies = companies;
-
   const clearFilters = () => {
     setFilters({
       searchTerm: '',
@@ -294,59 +254,39 @@ export function CompanyTable() {
     });
     setCurrentPage(1);
   };
-
-  const hasActiveFilters = filters.searchTerm !== '' || 
-    filters.status !== 'all' || 
-    filters.tagId !== 'all' || 
-    filters.assignmentFilter !== 'all';
-
+  const hasActiveFilters = filters.searchTerm !== '' || filters.status !== 'all' || filters.tagId !== 'all' || filters.assignmentFilter !== 'all';
   const canManageCompanies = true; // Everyone can manage companies now
   const canDeleteCompanies = profile?.role === 'ADMIN';
-
   if (isAdding) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-foreground">Add Company</h1>
         </div>
-        <CompanyForm
-          onSubmit={handleCreateCompany}
-          onCancel={() => setIsAdding(false)}
-        />
-      </div>
-    );
+        <CompanyForm onSubmit={handleCreateCompany} onCancel={() => setIsAdding(false)} />
+      </div>;
   }
-
-  return (
-    <>
+  return <>
       <CsvImport onImportComplete={loadCompanies} />
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Companies</CardTitle>
-          {canManageCompanies && (
-            <Button 
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => setIsAdding(true)}
-            >
+            <CardTitle>Entreprise</CardTitle>
+          {canManageCompanies && <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAdding(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Add Company
-            </Button>
-          )}
+            </Button>}
         </div>
         <div className="flex flex-col space-y-4">
           <div className="flex items-center space-x-2">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search companies..."
-                value={filters.searchTerm}
-                onChange={(e) => {
-                  setFilters(prev => ({ ...prev, searchTerm: e.target.value }));
-                  setCurrentPage(1);
-                }}
-                className="pl-9"
-              />
+              <Input placeholder="Search companies..." value={filters.searchTerm} onChange={e => {
+                setFilters(prev => ({
+                  ...prev,
+                  searchTerm: e.target.value
+                }));
+                setCurrentPage(1);
+              }} className="pl-9" />
             </div>
             
             <Popover>
@@ -354,35 +294,31 @@ export function CompanyTable() {
                 <Button variant="outline" className="gap-2">
                   <Filter className="h-4 w-4" />
                   Filtres
-                  {hasActiveFilters && (
-                    <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                  {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                       !
-                    </Badge>
-                  )}
+                    </Badge>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80" align="start">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">Filtres</h4>
-                    {hasActiveFilters && (
-                      <Button variant="ghost" size="sm" onClick={clearFilters}>
+                    {hasActiveFilters && <Button variant="ghost" size="sm" onClick={clearFilters}>
                         <X className="h-4 w-4 mr-1" />
                         Effacer
-                      </Button>
-                    )}
+                      </Button>}
                   </div>
                   
                   <div className="space-y-3">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Statut</label>
-                      <Select
-                        value={filters.status}
-                        onValueChange={(value) => {
-                          setFilters(prev => ({ ...prev, status: value }));
-                          setCurrentPage(1);
-                        }}
-                      >
+                      <Select value={filters.status} onValueChange={value => {
+                        setFilters(prev => ({
+                          ...prev,
+                          status: value
+                        }));
+                        setCurrentPage(1);
+                      }}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -404,42 +340,39 @@ export function CompanyTable() {
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Étiquette</label>
-                      <Select
-                        value={filters.tagId}
-                        onValueChange={(value) => {
-                          setFilters(prev => ({ ...prev, tagId: value }));
-                          setCurrentPage(1);
-                        }}
-                      >
+                      <Select value={filters.tagId} onValueChange={value => {
+                        setFilters(prev => ({
+                          ...prev,
+                          tagId: value
+                        }));
+                        setCurrentPage(1);
+                      }}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Toutes les étiquettes</SelectItem>
-                          {allTags.map((tag) => (
-                            <SelectItem key={tag.id} value={tag.id}>
+                          {allTags.map(tag => <SelectItem key={tag.id} value={tag.id}>
                               <div className="flex items-center gap-2">
-                                <div 
-                                  className="w-3 h-3 rounded-full" 
-                                  style={{ backgroundColor: tag.color }}
-                                />
+                                <div className="w-3 h-3 rounded-full" style={{
+                                backgroundColor: tag.color
+                              }} />
                                 {tag.name}
                               </div>
-                            </SelectItem>
-                          ))}
+                            </SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Assignations</label>
-                      <Select
-                        value={filters.assignmentFilter}
-                        onValueChange={(value) => {
-                          setFilters(prev => ({ ...prev, assignmentFilter: value }));
-                          setCurrentPage(1);
-                        }}
-                      >
+                      <Select value={filters.assignmentFilter} onValueChange={value => {
+                        setFilters(prev => ({
+                          ...prev,
+                          assignmentFilter: value
+                        }));
+                        setCurrentPage(1);
+                      }}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -457,38 +390,25 @@ export function CompanyTable() {
             </Popover>
           </div>
           
-          {hasActiveFilters && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {hasActiveFilters && <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Filtres actifs :</span>
-              {filters.searchTerm && (
-                <Badge variant="secondary">Recherche : "{filters.searchTerm}"</Badge>
-              )}
-              {filters.status !== 'all' && (
-                <Badge variant="secondary">Statut : {filters.status}</Badge>
-              )}
-              {filters.tagId !== 'all' && (
-                <Badge variant="secondary">
+              {filters.searchTerm && <Badge variant="secondary">Recherche : "{filters.searchTerm}"</Badge>}
+              {filters.status !== 'all' && <Badge variant="secondary">Statut : {filters.status}</Badge>}
+              {filters.tagId !== 'all' && <Badge variant="secondary">
                   Étiquette : {allTags.find(t => t.id === filters.tagId)?.name}
-                </Badge>
-              )}
-              {filters.assignmentFilter !== 'all' && (
-                <Badge variant="secondary">
+                </Badge>}
+              {filters.assignmentFilter !== 'all' && <Badge variant="secondary">
                   {filters.assignmentFilter === 'assigned' && 'Avec assignations'}
                   {filters.assignmentFilter === 'unassigned' && 'Sans assignations'}
                   {filters.assignmentFilter === 'my-assignments' && 'Mes assignations'}
-                </Badge>
-              )}
-            </div>
-          )}
+                </Badge>}
+            </div>}
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+        {isLoading ? <div className="flex items-center justify-center py-12">
             <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-          </div>
-        ) : (
-          <div className="rounded-md border">
+          </div> : <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -502,64 +422,47 @@ export function CompanyTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCompanies.length === 0 ? (
-                  <TableRow>
+                {filteredCompanies.length === 0 ? <TableRow>
                     <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                       {companies.length === 0 ? 'Aucune entreprise trouvée. Créez votre première entreprise pour commencer.' : 'Aucune entreprise ne correspond à vos critères de recherche.'}
                     </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredCompanies.map((company) => (
-                    <TableRow key={company.id} className="hover:bg-muted/50">
+                  </TableRow> : filteredCompanies.map(company => <TableRow key={company.id} className="hover:bg-muted/50">
                       <TableCell>
                         <div>
                           <div className="font-medium text-foreground">{company.name}</div>
-                          {company.phone && (
-                            <div className="text-sm text-muted-foreground">{company.phone}</div>
-                          )}
+                          {company.phone && <div className="text-sm text-muted-foreground">{company.phone}</div>}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {company.contact_name && (
-                          <div>
+                        {company.contact_name && <div>
                             <div className="font-medium text-foreground">{company.contact_name}</div>
-                            {company.contact_email && (
-                              <div className="text-sm text-muted-foreground">{company.contact_email}</div>
-                            )}
-                          </div>
-                        )}
+                            {company.contact_email && <div className="text-sm text-muted-foreground">{company.contact_email}</div>}
+                          </div>}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={company.status} />
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {company.tags?.slice(0, 2).map((tag) => (
-                            <Badge key={tag.id} style={{ backgroundColor: tag.color, color: 'white' }}>
+                          {company.tags?.slice(0, 2).map(tag => <Badge key={tag.id} style={{
+                      backgroundColor: tag.color,
+                      color: 'white'
+                    }}>
                               {tag.name}
-                            </Badge>
-                          ))}
-                          {(company.tags?.length || 0) > 2 && (
-                            <span className="text-xs text-muted-foreground">
+                            </Badge>)}
+                          {(company.tags?.length || 0) > 2 && <span className="text-xs text-muted-foreground">
                               +{(company.tags?.length || 0) - 2} more
-                            </span>
-                          )}
+                            </span>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {company.assignedUsers > 0 ? (
-                            <Badge variant="secondary">
+                          {company.assignedUsers > 0 ? <Badge variant="secondary">
                               {company.assignedUsers} user{company.assignedUsers !== 1 ? 's' : ''}
-                            </Badge>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">No assignments</span>
-                          )}
-                          {company.hasCurrentUserAssignment && (
-                            <Badge variant="outline" className="text-primary border-primary">
+                            </Badge> : <span className="text-sm text-muted-foreground">No assignments</span>}
+                          {company.hasCurrentUserAssignment && <Badge variant="outline" className="text-primary border-primary">
                               Vous
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -581,65 +484,42 @@ export function CompanyTable() {
                               <Edit className="mr-2 h-4 w-4" />
                               Modifier
                             </DropdownMenuItem>
-                            {canDeleteCompanies && (
-                              <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={() => handleDeleteCompany(company.id)}
-                              >
+                            {canDeleteCompanies && <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteCompany(company.id)}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
-                              </DropdownMenuItem>
-                            )}
+                              </DropdownMenuItem>}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                    </TableRow>)}
               </TableBody>
             </Table>
-          </div>
-        )}
+          </div>}
         
-        {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && (
-          <div className="flex items-center justify-between mt-4">
+        {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-muted-foreground">
-              Affichage de {((currentPage - 1) * itemsPerPage) + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
+              Affichage de {(currentPage - 1) * itemsPerPage + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
             </p>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="h-4 w-4" />
                 Précédent
               </Button>
               <span className="text-sm text-muted-foreground">
                 Page {currentPage} sur {Math.ceil(totalCount / itemsPerPage)}
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))}
-                disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}>
                 Suivant
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        )}
-        {!isLoading && hasActiveFilters && (
-          <div className="mt-4">
+          </div>}
+        {!isLoading && hasActiveFilters && <div className="mt-4">
             <p className="text-sm text-muted-foreground">
               {filteredCompanies.length} entreprise{filteredCompanies.length !== 1 ? 's' : ''} trouvée{filteredCompanies.length !== 1 ? 's' : ''}
             </p>
-          </div>
-        )}
+          </div>}
       </CardContent>
     </Card>
-    </>
-  );
+    </>;
 }
