@@ -43,6 +43,7 @@ interface CompanyWithTags extends Company {
   tags?: Tag[];
   assignedUsers?: number;
   hasCurrentUserAssignment?: boolean;
+  _matchesFilters?: boolean;
 }
 
 type SearchFilters = {
@@ -82,24 +83,42 @@ export function CompanyTable() {
     
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   const loadCompanies = async () => {
     try {
-      // Get total count
-      const { count } = await supabase
-        .from('companies')
-        .select('*', { count: 'exact', head: true });
+      // Build base query
+      let query = supabase.from('companies').select('*', { count: 'exact' });
 
+      // Apply search filter
+      if (filters.searchTerm) {
+        query = query.or(`name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,contact_email.ilike.%${filters.searchTerm}%`);
+      }
+
+      // Apply status filter
+      if (filters.status !== 'all') {
+        query = query.eq('status', filters.status as any);
+      }
+
+      // Get count with filters
+      const { count } = await query;
       setTotalCount(count || 0);
 
-      // Get paginated data
+      // Get paginated data with filters
       const from = (currentPage - 1) * itemsPerPage;
       const to = from + itemsPerPage - 1;
 
-      const { data: companiesData, error } = await supabase
-        .from('companies')
-        .select('*')
+      let dataQuery = supabase.from('companies').select('*');
+
+      // Apply same filters
+      if (filters.searchTerm) {
+        dataQuery = dataQuery.or(`name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,contact_email.ilike.%${filters.searchTerm}%`);
+      }
+      if (filters.status !== 'all') {
+        dataQuery = dataQuery.eq('status', filters.status as any);
+      }
+
+      const { data: companiesData, error } = await dataQuery
         .order('updated_at', { ascending: false })
         .range(from, to);
 
@@ -130,16 +149,40 @@ export function CompanyTable() {
           const hasCurrentUserAssignment = user ? 
             assignmentData?.some(a => a.user_id === user.id) || false : false;
 
+          // Apply tag filter
+          const companyTags = tagData?.map((ct: any) => ct.tags).filter(Boolean) || [];
+          const matchesTag = filters.tagId === 'all' || 
+            companyTags.some(tag => tag.id === filters.tagId);
+
+          // Apply assignment filter
+          let matchesAssignment = true;
+          switch (filters.assignmentFilter) {
+            case 'assigned':
+              matchesAssignment = assignedUsers > 0;
+              break;
+            case 'unassigned':
+              matchesAssignment = assignedUsers === 0;
+              break;
+            case 'my-assignments':
+              matchesAssignment = hasCurrentUserAssignment;
+              break;
+            default:
+              matchesAssignment = true;
+          }
+
           return {
             ...company,
-            tags: tagData?.map((ct: any) => ct.tags).filter(Boolean) || [],
+            tags: companyTags,
             assignedUsers,
-            hasCurrentUserAssignment
+            hasCurrentUserAssignment,
+            _matchesFilters: matchesTag && matchesAssignment
           };
         })
       );
 
-      setCompanies(companiesWithTags);
+      // Filter out companies that don't match tag/assignment filters
+      const filteredCompanies = companiesWithTags.filter(c => c._matchesFilters);
+      setCompanies(filteredCompanies);
     } catch (error) {
       console.error('Error loading companies:', error);
       toast({
@@ -230,38 +273,8 @@ export function CompanyTable() {
     }
   };
 
-  const filteredCompanies = companies.filter(company => {
-    // Search term filter
-    const matchesSearch = !filters.searchTerm || 
-      company.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      company.contact_name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      company.contact_email?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-
-    // Status filter
-    const matchesStatus = filters.status === 'all' || company.status === filters.status;
-
-    // Tag filter
-    const matchesTag = filters.tagId === 'all' || 
-      company.tags?.some(tag => tag.id === filters.tagId);
-
-    // Assignment filter
-    let matchesAssignment = true;
-    switch (filters.assignmentFilter) {
-      case 'assigned':
-        matchesAssignment = company.assignedUsers > 0;
-        break;
-      case 'unassigned':
-        matchesAssignment = company.assignedUsers === 0;
-        break;
-      case 'my-assignments':
-        matchesAssignment = company.hasCurrentUserAssignment;
-        break;
-      default:
-        matchesAssignment = true;
-    }
-
-    return matchesSearch && matchesStatus && matchesTag && matchesAssignment;
-  });
+  // Companies are already filtered server-side
+  const filteredCompanies = companies;
 
   const clearFilters = () => {
     setFilters({
@@ -319,7 +332,10 @@ export function CompanyTable() {
               <Input
                 placeholder="Search companies..."
                 value={filters.searchTerm}
-                onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
+                onChange={(e) => {
+                  setFilters(prev => ({ ...prev, searchTerm: e.target.value }));
+                  setCurrentPage(1);
+                }}
                 className="pl-9"
               />
             </div>
@@ -353,7 +369,10 @@ export function CompanyTable() {
                       <label className="text-sm font-medium mb-2 block">Statut</label>
                       <Select
                         value={filters.status}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+                        onValueChange={(value) => {
+                          setFilters(prev => ({ ...prev, status: value }));
+                          setCurrentPage(1);
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -378,7 +397,10 @@ export function CompanyTable() {
                       <label className="text-sm font-medium mb-2 block">Étiquette</label>
                       <Select
                         value={filters.tagId}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, tagId: value }))}
+                        onValueChange={(value) => {
+                          setFilters(prev => ({ ...prev, tagId: value }));
+                          setCurrentPage(1);
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -404,7 +426,10 @@ export function CompanyTable() {
                       <label className="text-sm font-medium mb-2 block">Assignations</label>
                       <Select
                         value={filters.assignmentFilter}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, assignmentFilter: value }))}
+                        onValueChange={(value) => {
+                          setFilters(prev => ({ ...prev, assignmentFilter: value }));
+                          setCurrentPage(1);
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue />
