@@ -270,7 +270,7 @@ export function CompanyTable() {
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Entreprise</CardTitle>
+            <CardTitle>Entreprises</CardTitle>
           {canManageCompanies && <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAdding(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Add Company
