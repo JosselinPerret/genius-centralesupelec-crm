@@ -87,48 +87,88 @@ export function UserRanking() {
     }
   };
 
-  const renderRankingCard = (users: UserScore[], title: string, icon: React.ReactNode, gradient: string, isDark: boolean) => (
-    <Card className={`shadow-card ${isDark ? 'border-red-200 dark:border-red-900' : 'border-green-200 dark:border-green-900'}`}>
-      <CardHeader className={`bg-gradient-to-r ${gradient}`}>
-        <CardTitle className={`flex items-center gap-2 ${isDark ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300'}`}>
-          {icon}
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-6 space-y-4">
-        {users.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">Aucune donnée disponible</p>
-        ) : (
-          users.slice(0, 5).map((user, index) => (
-            <div key={user.userId} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-white font-bold text-sm ${
-                isDark 
-                  ? 'bg-gradient-to-br from-slate-400 to-slate-600' 
-                  : 'bg-gradient-to-br from-yellow-400 to-amber-600'
-              }`}>
-                {index + 1}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-foreground">{user.userName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {user.companyCount} entreprise{user.companyCount > 1 ? 's' : ''} • Score total: {user.totalScore}
-                </p>
-              </div>
-              <div 
-                className="px-2 py-1 rounded whitespace-nowrap text-xs font-semibold"
-                style={{ 
-                  backgroundColor: getScoreColor(user.totalScore),
-                  color: user.totalScore >= 50 ? '#000' : '#fff'
-                }}
-              >
-                {user.totalScore}
-              </div>
-            </div>
-          ))
+  const renderRankingCard = (users: UserScore[], title: string, icon: any, gradient: string) => {
+    const topThree = users.slice(0, 3);
+    const lastThree = users.length > 3 ? users.slice(-3).reverse() : [];
+
+    return (
+      <div className="space-y-4">
+        {/* Top 3 */}
+        <Card className="shadow-card border-green-200 dark:border-green-900">
+          <CardHeader className={`bg-gradient-to-r ${gradient}`}>
+            <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              {icon}
+              {title} - Top 3
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            {topThree.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">Aucune donnée disponible</p>
+            ) : (
+              topThree.map((user, index) => (
+                <div key={`top-${user.userId}`} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 text-white font-bold text-sm">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">{user.userName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.companyCount} entreprise{user.companyCount > 1 ? 's' : ''} • Score total: {user.totalScore}
+                    </p>
+                  </div>
+                  <div 
+                    className="px-2 py-1 rounded whitespace-nowrap text-xs font-semibold"
+                    style={{ 
+                      backgroundColor: getScoreColor(user.totalScore),
+                      color: user.totalScore >= 50 ? '#000' : '#fff'
+                    }}
+                  >
+                    {user.totalScore}
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Bottom 3 */}
+        {lastThree.length > 0 && (
+          <Card className="shadow-card border-red-200 dark:border-red-900">
+            <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950 dark:to-rose-950">
+              <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                <Trophy className="h-5 w-5" />
+                {title} - À Améliorer
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              {lastThree.map((user, index) => (
+                <div key={`bottom-${user.userId}`} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 text-white font-bold text-sm">
+                    {users.length - index}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">{user.userName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.companyCount} entreprise{user.companyCount > 1 ? 's' : ''} • Score total: {user.totalScore}
+                    </p>
+                  </div>
+                  <div 
+                    className="px-2 py-1 rounded whitespace-nowrap text-xs font-semibold"
+                    style={{ 
+                      backgroundColor: getScoreColor(user.totalScore),
+                      color: user.totalScore >= 50 ? '#000' : '#fff'
+                    }}
+                  >
+                    {user.totalScore}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -170,8 +210,7 @@ export function UserRanking() {
         allTimeUsers,
         'Classement ALL TIME',
         <Trophy className="h-5 w-5" />,
-        'from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950',
-        false
+        'from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950'
       )}
 
       {/* WEEKLY RANKING */}
@@ -179,8 +218,7 @@ export function UserRanking() {
         weeklyUsers,
         'Classement de la Semaine',
         <Calendar className="h-5 w-5" />,
-        'from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950',
-        false
+        'from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950'
       )}
     </div>
   );
