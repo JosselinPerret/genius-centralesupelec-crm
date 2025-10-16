@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '@/hooks/use-sidebar';
 
 interface SidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const navigation = [{
@@ -49,7 +49,13 @@ export function Sidebar({
   const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
 
   const handleTabClick = (tab: string) => {
-    onTabChange(tab);
+    if (onTabChange) {
+      // If onTabChange is provided (we're on the main page), use it
+      onTabChange(tab);
+    } else {
+      // If not, navigate to home with the tab as a query parameter
+      navigate(`/?tab=${tab}`);
+    }
     // Close sidebar on mobile after tab click
     if (isMobile) {
       close();
