@@ -149,12 +149,13 @@ export function Dashboard() {
   const recentCompanies = companies.slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Tableau de bord</h1>
+    <div className="space-y-4 md:space-y-6 w-full">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Tableau de bord</h1>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - Responsive */}
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Entreprises"
           value={totalCompanies}
@@ -188,11 +189,11 @@ export function Dashboard() {
       {/* User Ranking Section */}
       <UserRanking />
 
-      {/* Charts Section */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Répartition des Statuts</CardTitle>
+      {/* Charts Section - Responsive */}
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card className="shadow-card w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg md:text-xl">Répartition des Statuts</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -200,14 +201,14 @@ export function Dashboard() {
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="h-[300px]">
+              <ChartContainer config={chartConfig} className="h-[250px] md:h-[300px]">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Pie
                     data={statusDistribution.filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={window.innerWidth < 640 ? 60 : 80}
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}`}
                   >
@@ -221,9 +222,9 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Activité des 7 Derniers Jours</CardTitle>
+        <Card className="shadow-card w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg md:text-xl">Activité des 7 Derniers Jours</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -231,46 +232,49 @@ export function Dashboard() {
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <BarChart data={activityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="contacted" fill="var(--color-contacted)" name="Contacté" />
-                  <Bar dataKey="inDiscussion" fill="var(--color-inDiscussion)" name="En discussion" />
-                  <Bar dataKey="coming" fill="var(--color-coming)" name="Vient" />
-                  <Bar dataKey="notComing" fill="var(--color-notComing)" name="Ne vient pas" />
-                  <Bar dataKey="nextYear" fill="var(--color-nextYear)" name="Année prochaine" />
-                </BarChart>
+              <ChartContainer config={chartConfig} className="h-[250px] md:h-[300px] -mx-2 px-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={activityData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="contacted" fill="var(--color-contacted)" name="Contacté" />
+                    <Bar dataKey="inDiscussion" fill="var(--color-inDiscussion)" name="En discussion" />
+                    <Bar dataKey="coming" fill="var(--color-coming)" name="Vient" />
+                    <Bar dataKey="notComing" fill="var(--color-notComing)" name="Ne vient pas" />
+                    <Bar dataKey="nextYear" fill="var(--color-nextYear)" name="Année prochaine" />
+                  </BarChart>
+                </ResponsiveContainer>
               </ChartContainer>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 shadow-card">
-          <CardHeader>
-            <CardTitle>Activité Récente</CardTitle>
+      {/* Recent Activity and Status Distribution */}
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-4 shadow-card w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg md:text-xl">Activité Récente</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2 md:space-y-4">
                 {recentCompanies.length === 0 ? (
                   <p className="text-muted-foreground text-sm">Aucune activité récente</p>
                 ) : (
                   recentCompanies.map((company) => (
-                    <div key={company.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
-                      <div className="flex items-center space-x-3">
-                        <div className="h-2 w-2 rounded-full bg-primary"></div>
-                        <div>
-                          <p className="font-medium text-foreground">{company.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                    <div key={company.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3 last:border-0 gap-2">
+                      <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
+                        <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0"></div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground text-sm md:text-base truncate">{company.name}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground">
                             Modifié le {new Date(company.updated_at).toLocaleDateString('fr-FR')}
                           </p>
                         </div>
@@ -284,27 +288,27 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-3 shadow-card">
-          <CardHeader>
-            <CardTitle>Distribution des Statuts</CardTitle>
+        <Card className="col-span-1 lg:col-span-3 shadow-card w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg md:text-xl">Distribution des Statuts</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {statusDistribution.map((status) => (
-                  <div key={status.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div key={status.name} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div 
-                        className="w-3 h-3 rounded-full" 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: status.color }}
                       />
-                      <span className="text-sm text-foreground">{status.name}</span>
+                      <span className="text-xs md:text-sm text-foreground truncate">{status.name}</span>
                     </div>
-                    <span className="font-medium text-foreground">{status.value}</span>
+                    <span className="font-medium text-foreground text-sm md:text-base flex-shrink-0">{status.value}</span>
                   </div>
                 ))}
               </div>
