@@ -11,6 +11,7 @@ import CompanyDetail from "./pages/CompanyDetail";
 import NotFound from "./pages/NotFound";
 import UserStatistics from "./pages/UserStatistics";
 import MyStatistics from "./pages/MyStatistics";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/company/:id" element={<CompanyDetail />} />
               <Route path="/user-statistics" element={<UserStatistics />} />
               <Route path="/my-statistics" element={<MyStatistics />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
