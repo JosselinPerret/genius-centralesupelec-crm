@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -128,6 +128,16 @@ export function Sidebar({
             <span className="hidden sm:inline">Stats Utilisateurs</span>
             <span className="inline sm:hidden text-xs">Utilisateurs</span>
           </Button>}
+          
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm md:text-base"
+            onClick={() => handleNavigate('/leaderboard')}
+          >
+            <Trophy className="mr-3 h-5 w-5 flex-shrink-0" />
+            <span className="hidden sm:inline">Classement</span>
+            <span className="inline sm:hidden text-xs">Class.</span>
+          </Button>
         </div>
       </nav>
 

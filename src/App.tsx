@@ -11,6 +11,7 @@ import CompanyDetail from "./pages/CompanyDetail";
 import NotFound from "./pages/NotFound";
 import UserStatistics from "./pages/UserStatistics";
 import MyStatistics from "./pages/MyStatistics";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/company/:id" element={<CompanyDetail />} />
               <Route path="/user-statistics" element={<UserStatistics />} />
               <Route path="/my-statistics" element={<MyStatistics />} />
