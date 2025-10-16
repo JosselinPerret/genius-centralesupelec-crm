@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Building2, Users, Target, TrendingUp } from 'lucide-react';
 import { StatsCard } from './StatsCard';
+import { UserRanking } from './UserRanking';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -183,6 +184,9 @@ export function Dashboard() {
           trend={conversionTrend}
         />
       </div>
+
+      {/* User Ranking Section */}
+      <UserRanking />
 
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-2">
