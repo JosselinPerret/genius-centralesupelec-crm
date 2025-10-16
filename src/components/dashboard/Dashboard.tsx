@@ -35,14 +35,6 @@ export function Dashboard() {
   useEffect(() => {
     loadCompanies();
     loadPreviousWeekCompanies();
-
-    // Recharger les données toutes les 10 secondes pour avoir les stats à jour
-    const interval = setInterval(() => {
-      loadCompanies();
-      loadPreviousWeekCompanies();
-    }, 10000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const loadCompanies = async () => {
