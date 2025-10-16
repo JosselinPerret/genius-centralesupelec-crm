@@ -47,11 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setIsDark(!isDark);
   };
 
-  // Retourner null pendant le montage pour éviter les flashs
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Toujours fournir le contexte, même pendant le montage
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
       {children}
