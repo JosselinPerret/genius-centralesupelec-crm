@@ -1,8 +1,9 @@
-import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 interface SidebarProps {
   activeTab: string;
@@ -37,6 +38,7 @@ export function Sidebar({
     profile,
     signOut
   } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
   return <div className="flex h-full w-64 flex-col bg-card border-r border-border">
@@ -75,6 +77,20 @@ export function Sidebar({
       </nav>
 
       <div className="border-t border-border p-3 space-y-1">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start"
+          onClick={toggleTheme}
+          title={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+        >
+          {isDark ? (
+            <Sun className="mr-3 h-5 w-5" />
+          ) : (
+            <Moon className="mr-3 h-5 w-5" />
+          )}
+          {isDark ? "Mode clair" : "Mode sombre"}
+        </Button>
+
         <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive" onClick={signOut}>
           <LogOut className="mr-3 h-5 w-5" />
           Déconnexion
