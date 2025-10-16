@@ -5,13 +5,13 @@ export const statusScores: Record<CompanyStatus, number> = {
   'NOT_TO_CONTACT': 10,      // Hors cible
   'TO_CONTACT': 0,            // Prospect brut
   'CONTACTED': 50,            // Premier contact
-  'FIRST_FOLLOWUP': 50,       // Suivi initial
-  'SECOND_FOLLOWUP': 55,      // Suivi poussé
-  'THIRD_FOLLOWUP': 60,       // Dernier essai
-  'IN_DISCUSSION': 70,        // Opportunité chaude
-  'COMING': 100,              // Converti / client
-  'NOT_COMING': 20,           // Opportunité perdue
-  'NEXT_YEAR': 30              // Report / lead tiède
+  'FIRST_FOLLOWUP': 60,       // Suivi initial
+  'SECOND_FOLLOWUP': 70,      // Suivi poussé
+  'THIRD_FOLLOWUP': 80,       // Dernier essai
+  'IN_DISCUSSION': 100,        // Opportunité chaude
+  'COMING': 500,              // Converti / client
+  'NOT_COMING': 100,           // Opportunité perdue
+  'NEXT_YEAR': 150              // Report / lead tiède
 };
 
 // Interface pour le score utilisateur
