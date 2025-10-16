@@ -18,6 +18,13 @@ export function UserRanking() {
 
   useEffect(() => {
     loadUserRankings();
+
+    // Recharger les rankings toutes les 10 secondes pour avoir les données à jour
+    const interval = setInterval(() => {
+      loadUserRankings();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadUserRankings = async () => {
