@@ -15,7 +15,7 @@ const Index = () => {
   const tabFromUrl = searchParams.get('tab');
   const initialTab = validTabs.includes(tabFromUrl || '') ? tabFromUrl! : 'dashboard';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -46,6 +46,13 @@ const Index = () => {
         <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
       </div>
     );
+  }
+
+  // Redirect if volunteer tries to access tags tab
+  const isVolunteer = profile?.role === 'VOLUNTEER' || !profile?.role;
+  if (activeTab === 'tags' && isVolunteer) {
+    navigate('/', { replace: true });
+    return null;
   }
 
   const renderContent = () => {
