@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Trash2, Plus, Building2, User, Search, Eye, Edit, Mail, Phone, MapPin } from 'lucide-react';
 import { Assignment, Company } from '@/types/crm';
+import { BulkRandomAssignment } from './BulkRandomAssignment';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -276,6 +277,11 @@ export function AssignmentManager() {
           </p>
         </div>
       </div>
+
+      {/* Bulk Random Assignment - Only for Admin/Manager */}
+      {(currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER') && (
+        <BulkRandomAssignment />
+      )}
 
       {/* Add New Assignment Card */}
       <Card>
