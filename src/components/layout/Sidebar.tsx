@@ -39,7 +39,6 @@ export function Sidebar({
   } = useAuth();
   const navigate = useNavigate();
   const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
-  const canViewTags = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
   return <div className="flex h-full w-64 flex-col bg-card border-r border-border">
       <div className="flex h-16 items-center border-b border-border px-6">
         <div className="flex items-center justify-between w-full">
@@ -56,10 +55,6 @@ export function Sidebar({
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map(item => {
         const Icon = item.icon;
-        // Hide tags for volunteers
-        if (item.id === 'tags' && !canViewTags) {
-          return null;
-        }
         return <Button key={item.id} variant={activeTab === item.id ? "secondary" : "ghost"} className={cn("w-full justify-start", activeTab === item.id && "bg-primary/10 text-primary font-medium")} onClick={() => onTabChange(item.id)}>
               <Icon className="mr-3 h-5 w-5" />
               {item.name}
