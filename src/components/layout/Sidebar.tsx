@@ -49,11 +49,13 @@ export function Sidebar({
   const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
 
   const handleTabClick = (tab: string) => {
+    console.log('handleTabClick called with:', tab, 'onTabChange:', !!onTabChange);
     if (onTabChange) {
       // If onTabChange is provided (we're on the main page), use it
       onTabChange(tab);
     } else {
       // If not, navigate to home with the tab as a query parameter
+      console.log('Navigating to:', `/?tab=${tab}`);
       navigate(`/?tab=${tab}`);
     }
     // Close sidebar on mobile after tab click
@@ -85,19 +87,25 @@ export function Sidebar({
         </div>
       </div>
       
-      <nav className="flex-1 space-y-1 px-2 md:px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 space-y-1 px-2 md:px-3 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded">
         {navigation.map(item => {
           const Icon = item.icon;
-          return <Button 
-            key={item.id} 
-            variant={activeTab === item.id ? "secondary" : "ghost"} 
-            className={cn("w-full justify-start text-sm md:text-base", activeTab === item.id && "bg-primary/10 text-primary font-medium")} 
-            onClick={() => handleTabClick(item.id)}
-          >
-            <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="hidden sm:inline">{item.name}</span>
-            <span className="inline sm:hidden text-xs">{item.name.split(' ')[0]}</span>
-          </Button>;
+          return (
+            <Button 
+              key={item.id} 
+              variant={activeTab === item.id ? "secondary" : "ghost"} 
+              className={cn(
+                "w-full justify-start text-sm md:text-base cursor-pointer",
+                activeTab === item.id && "bg-primary/10 text-primary font-medium"
+              )} 
+              onClick={() => handleTabClick(item.id)}
+              type="button"
+            >
+              <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="hidden sm:inline">{item.name}</span>
+              <span className="inline sm:hidden text-xs">{item.name.split(' ')[0]}</span>
+            </Button>
+          );
         })}
         
         <div className="pt-4 mt-4 border-t border-border">
@@ -180,9 +188,9 @@ export function Sidebar({
 
         {/* Sidebar drawer */}
         <div className={cn(
-          "fixed inset-y-0 left-0 w-64 bg-card border-r border-border z-40 flex flex-col transition-transform duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 w-64 bg-card border-r border-border z-40 flex flex-col transition-transform duration-300 ease-in-out overflow-hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
-        )} style={{ top: '4rem' }}>
+        )} style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}>
           <SidebarContent />
         </div>
       </>
