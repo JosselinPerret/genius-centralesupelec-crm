@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -150,21 +151,22 @@ export default function UserStatistics() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour à l'accueil
-          </Button>
-          <h1 className="text-3xl font-bold text-foreground">Statistiques Utilisateur</h1>
+    <MainLayout>
+      <div className="p-4 md:p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="mb-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour à l'accueil
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Statistiques Utilisateur</h1>
+          </div>
         </div>
-      </div>
 
       <Card className="shadow-card">
         <CardHeader>
@@ -313,10 +315,11 @@ export default function UserStatistics() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+        </CardContent>
+      </Card>
         </>
       )}
     </div>
+    </MainLayout>
   );
 }

@@ -7,6 +7,7 @@ import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -105,24 +106,25 @@ export default function MyStatistics() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour à l'accueil
-          </Button>
-          <h1 className="text-3xl font-bold text-foreground">Mes Statistiques</h1>
-          <p className="text-muted-foreground mt-1">
-            {profile?.name} - {profile?.role}
-          </p>
+    <MainLayout>
+      <div className="p-4 md:p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="mb-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour à l'accueil
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Mes Statistiques</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
+              {profile?.name} - {profile?.role}
+            </p>
+          </div>
         </div>
-      </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
@@ -252,5 +254,6 @@ export default function MyStatistics() {
         </CardContent>
       </Card>
     </div>
+    </MainLayout>
   );
 }

@@ -10,6 +10,7 @@ import { NotesSection } from '@/components/notes/NotesSection';
 import { CompanyForm } from '@/components/companies/CompanyForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Company {
@@ -223,65 +224,73 @@ export default function CompanyDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
+      <MainLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        </div>
+      </MainLayout>
     );
   }
 
   if (!company) {
     return (
-      <div className="text-center py-12">
-        <p className="text-lg text-foreground">Entreprise introuvable</p>
-        <Button onClick={() => navigate('/?tab=companies')} className="mt-4">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour aux entreprises
-        </Button>
-      </div>
+      <MainLayout>
+        <div className="text-center py-12">
+          <p className="text-lg text-foreground">Entreprise introuvable</p>
+          <Button onClick={() => navigate('/?tab=companies')} className="mt-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour aux entreprises
+          </Button>
+        </div>
+      </MainLayout>
     );
   }
 
   if (isEditing) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            onClick={() => setIsEditing(false)}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Annuler
-          </Button>
-          <h1 className="text-3xl font-bold text-foreground">Modifier l'entreprise</h1>
+      <MainLayout>
+        <div className="p-4 md:p-6 space-y-6">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => setIsEditing(false)}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Annuler
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Modifier l'entreprise</h1>
+          </div>
+          
+          <CompanyForm
+            company={company}
+            onSubmit={handleUpdateCompany}
+            onCancel={() => setIsEditing(false)}
+          />
         </div>
-        
-        <CompanyForm
-          company={company}
-          onSubmit={handleUpdateCompany}
-          onCancel={() => setIsEditing(false)}
-        />
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <MainLayout>
+      <div className="p-4 md:p-6 space-y-6">
+      <div className="flex items-center justify-between gap-2 md:gap-4">
+        <div className="flex items-center space-x-2 md:space-x-4 min-w-0">
           <Button
             variant="ghost"
             onClick={() => navigate('/?tab=companies')}
+            className="shrink-0"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            <span className="hidden md:inline">Retour</span>
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">{company.name}</h1>
+          <h1 className="text-xl md:text-3xl font-bold text-foreground truncate">{company.name}</h1>
         </div>
         
         {canEdit && (
-          <Button onClick={() => setIsEditing(true)}>
+          <Button onClick={() => setIsEditing(true)} size="sm" className="shrink-0">
             <Edit className="mr-2 h-4 w-4" />
-            Modifier l'entreprise
+            <span className="hidden md:inline">Modifier</span>
           </Button>
         )}
       </div>
@@ -412,5 +421,6 @@ export default function CompanyDetail() {
         </div>
       </div>
     </div>
+    </MainLayout>
   );
 }
