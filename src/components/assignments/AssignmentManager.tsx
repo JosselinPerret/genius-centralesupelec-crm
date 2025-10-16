@@ -40,7 +40,7 @@ interface Profile {
 }
 
 export function AssignmentManager() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -49,35 +49,17 @@ export function AssignmentManager() {
   const [loading, setLoading] = useState(true);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const currentUserRole = profile?.role || 'VOLUNTEER';
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
   const [users, setUsers] = useState<Profile[]>([]);
-  const [currentUserRole, setCurrentUserRole] = useState<string>('');
 
   useEffect(() => {
     if (user) {
-      fetchCurrentUserRole();
       fetchAssignments();
       fetchCompanies();
       fetchUsers();
     }
   }, [user]);
-
-  const fetchCurrentUserRole = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-      setCurrentUserRole(data?.role || 'VOLUNTEER');
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      setCurrentUserRole('VOLUNTEER');
-    }
-  };
 
   const fetchUsers = async () => {
     try {
