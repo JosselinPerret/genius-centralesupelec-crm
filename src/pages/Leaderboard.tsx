@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { UserRanking } from '@/components/dashboard/UserRanking';
-import { CompanyRanking } from '@/components/dashboard/CompanyRanking';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function Leaderboard() {
   const navigate = useNavigate();
@@ -35,15 +34,17 @@ export default function Leaderboard() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               <span className="hidden md:inline">Retour</span>
             </Button>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Classement</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Classement des Utilisateurs</h1>
           </div>
           
           <Button 
             onClick={handleRefresh}
             variant="outline"
             size="sm"
+            className="gap-2"
           >
-            Actualiser
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden sm:inline">Actualiser</span>
           </Button>
         </div>
 
@@ -51,7 +52,8 @@ export default function Leaderboard() {
         <Card className="shadow-card bg-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <p className="text-sm md:text-base text-foreground">
-              Consultez les classements des utilisateurs et des entreprises en temps réel. 
+              Découvrez le classement des utilisateurs basé sur leurs scores. 
+              Le score est calculé à partir du statut des entreprises assignées à chaque utilisateur.
               Les données se mettent à jour automatiquement à chaque visite.
             </p>
           </CardContent>
@@ -60,11 +62,6 @@ export default function Leaderboard() {
         {/* User Ranking */}
         <div key={`user-${refreshKey}`}>
           <UserRanking />
-        </div>
-
-        {/* Company Ranking */}
-        <div key={`company-${refreshKey}`}>
-          <CompanyRanking />
         </div>
       </div>
     </MainLayout>
