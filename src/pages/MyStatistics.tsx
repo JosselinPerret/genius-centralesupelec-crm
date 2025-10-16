@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
+import { Building2, Target, TrendingUp, Users } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { 
   ChartContainer, 
   ChartTooltip, 
@@ -105,152 +105,141 @@ export default function MyStatistics() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour à l'accueil
-          </Button>
-          <h1 className="text-3xl font-bold text-foreground">Mes Statistiques</h1>
-          <p className="text-muted-foreground mt-1">
-            {profile?.name} - {profile?.role}
-          </p>
+    <PageLayout
+      title="Mes Statistiques"
+      subtitle={`${profile?.name} - ${profile?.role}`}
+      showBackButton
+      backTo="/"
+    >
+      <div className="space-y-6">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <StatsCard
+            title="Mes Assignations"
+            value={totalAssigned}
+            description="Entreprises assignées"
+            icon={Building2}
+          />
+          <StatsCard
+            title="Vient"
+            value={coming}
+            description="Entreprises confirmées"
+            icon={Users}
+          />
+          <StatsCard
+            title="A Démarcher"
+            value={toContact}
+            description="En attente de contact"
+            icon={Target}
+          />
+          <StatsCard
+            title="Taux de Conversion"
+            value={`${conversionRate}%`}
+            description="Ratio de succès"
+            icon={TrendingUp}
+          />
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Mes Assignations"
-          value={totalAssigned}
-          description="Entreprises assignées"
-          icon={Building2}
-        />
-        <StatsCard
-          title="Vient"
-          value={coming}
-          description="Entreprises confirmées"
-          icon={Users}
-        />
-        <StatsCard
-          title="A Démarcher"
-          value={toContact}
-          description="En attente de contact"
-          icon={Target}
-        />
-        <StatsCard
-          title="Taux de Conversion"
-          value={`${conversionRate}%`}
-          description="Ratio de succès"
-          icon={TrendingUp}
-        />
-      </div>
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Répartition des Statuts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                </div>
+              ) : (
+                <ChartContainer config={chartConfig} className="h-[250px] md:h-[300px]">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Pie
+                      data={statusDistribution.filter(item => item.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+              )}
+              {companies.length === 0 && (
+                <p className="text-muted-foreground text-sm text-center py-8">
+                  Aucune donnée disponible
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Répartition des Statuts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-              </div>
-            ) : (
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Pie
-                    data={statusDistribution.filter(item => item.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-            )}
-            {companies.length === 0 && (
-              <p className="text-muted-foreground text-sm text-center py-8">
-                Aucune donnée disponible
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle>Détail des Statuts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {statusDistribution.map((status) => (
-                  <div key={status.name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: status.color }}
-                      />
-                      <span className="text-sm text-foreground">{status.name}</span>
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Détail des Statuts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {statusDistribution.map((status) => (
+                    <div key={status.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: status.color }}
+                        />
+                        <span className="text-sm text-foreground">{status.name}</span>
+                      </div>
+                      <span className="font-medium text-foreground">{status.value}</span>
                     </div>
-                    <span className="font-medium text-foreground">{status.value}</span>
-                  </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Mes Entreprises</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : companies.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                Vous n'avez pas encore d'entreprises assignées.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {companies.map((company) => (
+                  <Link
+                    key={company.id}
+                    to={`/company/${company.id}`}
+                    className="flex items-center justify-between border-b border-border pb-3 last:border-0 hover:bg-accent/50 transition-colors p-2 rounded -m-2"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">{company.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Modifié le {new Date(company.updated_at).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <StatusBadge status={company.status as any} />
+                  </Link>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Mes Entreprises</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-            </div>
-          ) : companies.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Vous n'avez pas encore d'entreprises assignées.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {companies.map((company) => (
-                <Link
-                  key={company.id}
-                  to={`/company/${company.id}`}
-                  className="flex items-center justify-between border-b border-border pb-3 last:border-0 hover:bg-accent/50 transition-colors p-2 rounded -m-2"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">{company.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Modifié le {new Date(company.updated_at).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                  <StatusBadge status={company.status as any} />
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    </PageLayout>
   );
 }
