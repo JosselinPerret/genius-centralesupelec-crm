@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, MapPin, Phone, Mail, Calendar, User, UserPlus } from 'lucide-react';
+import { ArrowLeft, Edit, MapPin, Phone, Mail, Calendar, User, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { NotesSection } from '@/components/notes/NotesSection';
-import { CompanyEditDialog } from '@/components/companies/CompanyEditDialog';
+import { CompanyForm } from '@/components/companies/CompanyForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { PageLayout } from '@/components/layout/PageLayout';
 
 interface Company {
   id: string;
@@ -46,10 +45,11 @@ interface AssignedUser {
 
 export default function CompanyDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
   const [tags, setTags] = useState<Tag[]>([]);
   const [assignments, setAssignments] = useState<AssignedUser[]>([]);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { profile, user } = useAuth();
   const { toast } = useToast();
@@ -83,6 +83,7 @@ export default function CompanyDetail() {
         description: "Échec du chargement des détails de l'entreprise",
         variant: "destructive",
       });
+      navigate('/?tab=companies');
     } finally {
       if (updateLoadingState) {
         setIsLoading(false);
@@ -172,6 +173,7 @@ export default function CompanyDetail() {
     await loadCompany(false);
     await loadCompanyTags();
     await loadCompanyAssignments();
+    setIsEditing(false);
     
     toast({
       title: "Entreprise mise à jour",
@@ -221,42 +223,71 @@ export default function CompanyDetail() {
 
   if (isLoading) {
     return (
-      <PageLayout title="Chargement..." showBackButton backTo="/?tab=companies">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-        </div>
-      </PageLayout>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+      </div>
     );
   }
 
   if (!company) {
     return (
-      <PageLayout title="Erreur" showBackButton backTo="/?tab=companies">
-        <div className="text-center py-12">
-          <p className="text-lg text-foreground">Entreprise introuvable</p>
+      <div className="text-center py-12">
+        <p className="text-lg text-foreground">Entreprise introuvable</p>
+        <Button onClick={() => navigate('/?tab=companies')} className="mt-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour aux entreprises
+        </Button>
+      </div>
+    );
+  }
+
+  if (isEditing) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            onClick={() => setIsEditing(false)}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Annuler
+          </Button>
+          <h1 className="text-3xl font-bold text-foreground">Modifier l'entreprise</h1>
         </div>
-      </PageLayout>
+        
+        <CompanyForm
+          company={company}
+          onSubmit={handleUpdateCompany}
+          onCancel={() => setIsEditing(false)}
+        />
+      </div>
     );
   }
 
   return (
-    <PageLayout
-      title={company.name}
-      showBackButton
-      backTo="/?tab=companies"
-      actions={
-        canEdit && (
-          <Button onClick={() => setIsEditDialogOpen(true)} size="sm">
-            <Edit className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Modifier</span>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/?tab=companies')}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour
           </Button>
-        )
-      }
-    >
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-        {/* Main Content */}
+          <h1 className="text-3xl font-bold text-foreground">{company.name}</h1>
+        </div>
+        
+        {canEdit && (
+          <Button onClick={() => setIsEditing(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Modifier l'entreprise
+          </Button>
+        )}
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-6">
-          {/* Infos Card */}
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle>Informations de l'entreprise</CardTitle>
@@ -297,13 +328,10 @@ export default function CompanyDetail() {
             </CardContent>
           </Card>
           
-          {/* Notes Section */}
           <NotesSection companyId={company.id} />
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Tags Card */}
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle>Étiquettes</CardTitle>
@@ -314,30 +342,28 @@ export default function CompanyDetail() {
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
-                    <span
+                    <Badge
                       key={tag.id}
-                      className="px-3 py-1 rounded-full text-sm font-medium text-white"
-                      style={{ backgroundColor: tag.color }}
+                      style={{ backgroundColor: tag.color, color: 'white' }}
                     >
                       {tag.name}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Users Card */}
           <Card className="shadow-card">
             <CardHeader>
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  <span>Assignés ({assignments.length})</span>
+                  Utilisateurs assignés ({assignments.length})
                 </CardTitle>
                 {!isCurrentUserAssigned && (
-                  <Button size="sm" onClick={handleAssignSelf} className="text-xs md:text-sm">
-                    <UserPlus className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                  <Button size="sm" onClick={handleAssignSelf}>
+                    <UserPlus className="h-4 w-4 mr-2" />
                     M'assigner
                   </Button>
                 )}
@@ -345,37 +371,37 @@ export default function CompanyDetail() {
             </CardHeader>
             <CardContent>
               {assignments.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Aucun utilisateur assigné</p>
+                <p className="text-muted-foreground text-sm">Aucun utilisateur assigné à cette entreprise</p>
               ) : (
                 <div className="space-y-3">
                   {assignments.map((assignment) => (
                     <div
                       key={assignment.id}
-                      className="flex items-center justify-between p-3 border rounded-lg text-sm"
+                      className="flex items-center justify-between p-3 border rounded-lg"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <User className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">
+                      <div className="flex items-center gap-3">
+                        <User className="h-6 w-6 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground">
                             {assignment.profiles.name}
                             {assignment.profiles.id === user?.id && (
-                              <span className="ml-1 text-xs bg-primary/10 text-primary px-1 rounded">
+                              <Badge variant="outline" className="ml-2 text-primary border-primary">
                                 Vous
-                              </span>
+                              </Badge>
                             )}
                           </p>
-                          <div className="flex items-center gap-1 mt-1 flex-wrap">
-                            <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary">
                               {assignment.role}
-                            </span>
-                            <span className="text-xs border text-muted-foreground px-2 py-1 rounded">
+                            </Badge>
+                            <Badge variant="outline">
                               {assignment.profiles.role}
-                            </span>
+                            </Badge>
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                        {new Date(assignment.created_at).toLocaleDateString()}
+                      <div className="text-sm text-muted-foreground">
+                        Assigné le {new Date(assignment.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   ))}
@@ -385,16 +411,6 @@ export default function CompanyDetail() {
           </Card>
         </div>
       </div>
-
-      {/* Edit Dialog Modal */}
-      {company && (
-        <CompanyEditDialog
-          company={company}
-          isOpen={isEditDialogOpen}
-          onClose={() => setIsEditDialogOpen(false)}
-          onSubmit={handleUpdateCompany}
-        />
-      )}
-    </PageLayout>
+    </div>
   );
 }
