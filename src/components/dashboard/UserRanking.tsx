@@ -24,7 +24,7 @@ export function UserRanking() {
     try {
       setIsLoading(true);
 
-      // Récupérer tous les utilisateurs
+      // Récupérer tous les utilisateurs (tous les rôles: admin, manager, sales)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -38,7 +38,7 @@ export function UserRanking() {
 
       if (assignmentsError) throw assignmentsError;
 
-      // Calculer le score de chaque utilisateur
+      // Calculer le score de chaque utilisateur (incluant admins/managers)
       const userScores: UserScore[] = profiles!.map((profile: Profile) => {
         const userAssignments = (assignments as AssignmentWithRelations[])
           .filter(a => a.user_id === profile.user_id)
@@ -51,13 +51,13 @@ export function UserRanking() {
         return calculateUserScore(profile.user_id, profile.name, userAssignments);
       });
 
-      // Trier par score décroissant
+      // Trier par score décroissant (inclut tous les rôles)
       const sortedByScore = [...userScores].sort((a, b) => b.averageScore - a.averageScore);
 
-      // Top 3
+      // Top 3 (tous les utilisateurs peu importe le rôle)
       setTopUsers(sortedByScore.slice(0, 3));
 
-      // Bottom 3 (au moins 1 entreprise assignée)
+      // Bottom 3 (au moins 1 entreprise assignée pour avoir un score pertinent)
       const usersWithCompanies = sortedByScore.filter(u => u.companyCount > 0);
       setBottomUsers(usersWithCompanies.slice(-3).reverse());
     } catch (error) {
