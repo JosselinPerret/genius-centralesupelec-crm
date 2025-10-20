@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy, Merge2 } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy, GitMerge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,7 @@ const navigation = [{
 }, {
   id: 'duplicates',
   name: 'Doublons',
-  icon: Merge2
+  icon: GitMerge
 }, {
   id: 'assignments',
   name: 'Assignations',
