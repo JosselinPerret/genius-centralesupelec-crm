@@ -3,6 +3,7 @@ import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { CompanyTable } from '@/components/companies/CompanyTable';
+import { DuplicateManager } from '@/components/companies/DuplicateManager';
 import { TagManager } from '@/components/tags/TagManager';
 import { UserManagement } from '@/components/users/UserManagement';
 import { AssignmentManager } from '@/components/assignments/AssignmentManager';
@@ -11,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const Index = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const validTabs = ['dashboard', 'companies', 'assignments', 'users', 'tags'];
+  const validTabs = ['dashboard', 'companies', 'duplicates', 'assignments', 'users', 'tags'];
   const tabFromUrl = searchParams.get('tab');
   const initialTab = validTabs.includes(tabFromUrl || '') ? tabFromUrl! : 'dashboard';
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -54,6 +55,8 @@ const Index = () => {
         return <Dashboard />;
       case 'companies':
         return <CompanyTable />;
+      case 'duplicates':
+        return <DuplicateManager />;
       case 'assignments':
         return <AssignmentManager />;
       case 'users':
