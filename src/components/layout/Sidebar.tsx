@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '@/hooks/use-sidebar';
+import { GlobalSearch, useGlobalSearch, SearchTrigger } from './GlobalSearch';
 
 interface SidebarProps {
   activeTab?: string;
@@ -47,6 +48,7 @@ export function Sidebar({
   const { isOpen, isMobile, toggle, close } = useSidebar();
   
   const canViewUserStats = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
+  const globalSearch = useGlobalSearch();
 
   const handleTabClick = (tab: string) => {
     console.log('handleTabClick called with:', tab, 'onTabChange:', !!onTabChange);
@@ -125,6 +127,11 @@ export function Sidebar({
         </div>
       )}
       
+      {/* Search */}
+      <div className="px-3 pt-3">
+        <SearchTrigger onClick={globalSearch.open} />
+      </div>
+      
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -201,6 +208,9 @@ export function Sidebar({
   if (isMobile) {
     return (
       <>
+        {/* Global Search Modal */}
+        <GlobalSearch open={globalSearch.isOpen} onOpenChange={globalSearch.setIsOpen} />
+        
         {/* Header with toggle button */}
         <div className="fixed top-0 left-0 right-0 h-16 glass-strong border-b border-border/50 flex items-center px-4 z-40">
           <Button 
@@ -240,8 +250,11 @@ export function Sidebar({
 
   // Desktop view
   return (
-    <div className="hidden md:flex h-screen w-72 flex-col glass-strong border-r border-border/50 sticky top-0">
-      <SidebarContent />
-    </div>
+    <>
+      <GlobalSearch open={globalSearch.isOpen} onOpenChange={globalSearch.setIsOpen} />
+      <div className="hidden md:flex h-screen w-72 flex-col glass-strong border-r border-border/50 sticky top-0">
+        <SidebarContent />
+      </div>
+    </>
   );
 }

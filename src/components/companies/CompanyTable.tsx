@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft, ChevronRight, LayoutGrid, List } from 'lucide-react';
 import { Company } from '@/types/crm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CompanyForm } from './CompanyForm';
 import { CsvImport } from './CsvImport';
+import { CompanyCard } from './CompanyCard';
+import { TableSkeleton, CompanyCardSkeleton } from '@/components/ui/loading-skeletons';
+import { EmptyCompanies, EmptySearchResults } from '@/components/ui/empty-state';
+import { useConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 interface Tag {
   id: string;
   name: string;
@@ -46,8 +51,19 @@ export function CompanyTable() {
   const [isAdding, setIsAdding] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const itemsPerPage = 20;
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // Confirmation dialog for delete
+  const deleteDialog = useConfirmDialog({
+    title: 'Supprimer l\'entreprise',
+    description: 'Êtes-vous sûr de vouloir supprimer cette entreprise ? Cette action est irréversible.',
+    confirmLabel: 'Supprimer',
+    cancelLabel: 'Annuler',
+    variant: 'destructive',
+  });
   const {
     profile,
     user
@@ -172,8 +188,8 @@ export function CompanyTable() {
     } catch (error) {
       console.error('Error loading companies:', error);
       toast({
-        title: "Error",
-        description: "Failed to load companies",
+        title: "Erreur",
+        description: "Échec du chargement des entreprises",
         variant: "destructive"
       });
     } finally {
@@ -211,36 +227,35 @@ export function CompanyTable() {
       setIsAdding(false);
       loadCompanies();
       toast({
-        title: "Company created",
-        description: "The company has been created successfully."
+        title: "Entreprise créée",
+        description: "L'entreprise a été créée avec succès."
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive"
       });
     }
   };
-  const handleDeleteCompany = async (companyId: string) => {
-    if (!confirm('Are you sure you want to delete this company? This action cannot be undone.')) return;
-    try {
-      const {
-        error
-      } = await supabase.from('companies').delete().eq('id', companyId);
-      if (error) throw error;
-      loadCompanies();
-      toast({
-        title: "Company deleted",
-        description: "The company has been deleted successfully."
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+  const handleDeleteCompany = (companyId: string) => {
+    deleteDialog.confirm(async () => {
+      try {
+        const { error } = await supabase.from('companies').delete().eq('id', companyId);
+        if (error) throw error;
+        loadCompanies();
+        toast({
+          title: "Entreprise supprimée",
+          description: "L'entreprise a été supprimée avec succès."
+        });
+      } catch (error: any) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
+    });
   };
 
   // Companies are already filtered server-side
@@ -257,10 +272,13 @@ export function CompanyTable() {
   const hasActiveFilters = filters.searchTerm !== '' || filters.status !== 'all' || filters.tagId !== 'all' || filters.assignmentFilter !== 'all';
   const canManageCompanies = true; // Everyone can manage companies now
   const canDeleteCompanies = profile?.role === 'ADMIN';
+  // Use card view on mobile by default
+  const effectiveViewMode = isMobile ? 'cards' : viewMode;
+
   if (isAdding) {
     return <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">Add Company</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Ajouter une entreprise</h1>
         </div>
         <CompanyForm onSubmit={handleCreateCompany} onCancel={() => setIsAdding(false)} />
       </div>;
@@ -269,18 +287,44 @@ export function CompanyTable() {
       <CsvImport onImportComplete={loadCompanies} />
       <Card className="shadow-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle>Entreprises</CardTitle>
-          {canManageCompanies && <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAdding(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Company
-            </Button>}
+            <div className="flex items-center gap-2">
+              {/* View mode toggle - hidden on mobile */}
+              {!isMobile && (
+                <div className="flex items-center border rounded-md">
+                  <Button 
+                    variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className="rounded-r-none"
+                    onClick={() => setViewMode('table')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === 'cards' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className="rounded-l-none"
+                    onClick={() => setViewMode('cards')}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              {canManageCompanies && (
+                <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAdding(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Ajouter une entreprise</span>
+                  <span className="sm:hidden">Ajouter</span>
+                </Button>
+              )}
+            </div>
         </div>
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2">
+            <div className="relative flex-1 sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search companies..." value={filters.searchTerm} onChange={e => {
+              <Input placeholder="Rechercher des entreprises..." value={filters.searchTerm} onChange={e => {
                 setFilters(prev => ({
                   ...prev,
                   searchTerm: e.target.value
@@ -406,120 +450,151 @@ export function CompanyTable() {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-          </div> : <div className="rounded-md border">
+        {/* Loading state */}
+        {isLoading ? (
+          effectiveViewMode === 'cards' ? (
+            <CompanyCardSkeleton count={6} />
+          ) : (
+            <TableSkeleton rows={5} columns={7} />
+          )
+        ) : filteredCompanies.length === 0 ? (
+          /* Empty state */
+          companies.length === 0 ? (
+            <EmptyCompanies onAdd={() => setIsAdding(true)} />
+          ) : (
+            <EmptySearchResults onClear={clearFilters} />
+          )
+        ) : effectiveViewMode === 'cards' ? (
+          /* Card view */
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredCompanies.map(company => (
+              <CompanyCard 
+                key={company.id}
+                company={company}
+                canDelete={canDeleteCompanies}
+                onDelete={handleDeleteCompany}
+              />
+            ))}
+          </div>
+        ) : (
+          /* Table view */
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Entreprise</TableHead>
-                  <TableHead>Contact</TableHead>
+                  <TableHead className="hidden md:table-cell">Contact</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Étiquettes</TableHead>
-                  <TableHead>Assignations</TableHead>
-                  <TableHead>Modifié</TableHead>
+                  <TableHead className="hidden lg:table-cell">Étiquettes</TableHead>
+                  <TableHead className="hidden md:table-cell">Assignations</TableHead>
+                  <TableHead className="hidden sm:table-cell">Modifié</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCompanies.length === 0 ? <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                      {companies.length === 0 ? 'Aucune entreprise trouvée. Créez votre première entreprise pour commencer.' : 'Aucune entreprise ne correspond à vos critères de recherche.'}
+                {filteredCompanies.map(company => (
+                  <TableRow key={company.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(`/company/${company.id}`)}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium text-foreground">{company.name}</div>
+                        {company.phone && <div className="text-sm text-muted-foreground">{company.phone}</div>}
+                      </div>
                     </TableCell>
-                  </TableRow> : filteredCompanies.map(company => <TableRow key={company.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-foreground">{company.name}</div>
-                          {company.phone && <div className="text-sm text-muted-foreground">{company.phone}</div>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {company.contact_name && <div>
-                            <div className="font-medium text-foreground">{company.contact_name}</div>
-                            {company.contact_email && <div className="text-sm text-muted-foreground">{company.contact_email}</div>}
-                          </div>}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={company.status} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {company.tags?.slice(0, 2).map(tag => <Badge key={tag.id} style={{
-                      backgroundColor: tag.color,
-                      color: 'white'
-                    }}>
-                              {tag.name}
-                            </Badge>)}
-                          {(company.tags?.length || 0) > 2 && <span className="text-xs text-muted-foreground">
-                              +{(company.tags?.length || 0) - 2} more
-                            </span>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {company.assignedUsers > 0 ? <Badge variant="secondary">
-                              {company.assignedUsers} user{company.assignedUsers !== 1 ? 's' : ''}
-                            </Badge> : <span className="text-sm text-muted-foreground">No assignments</span>}
-                          {company.hasCurrentUserAssignment && <Badge variant="outline" className="text-primary border-primary">
-                              Vous
-                            </Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(company.updated_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Voir les détails
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Modifier
-                            </DropdownMenuItem>
-                            {canDeleteCompanies && <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteCompany(company.id)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>)}
+                    <TableCell className="hidden md:table-cell">
+                      {company.contact_name && <div>
+                          <div className="font-medium text-foreground">{company.contact_name}</div>
+                          {company.contact_email && <div className="text-sm text-muted-foreground">{company.contact_email}</div>}
+                        </div>}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={company.status} />
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {company.tags?.slice(0, 2).map(tag => <Badge key={tag.id} style={{
+                    backgroundColor: tag.color,
+                    color: 'white'
+                  }}>
+                            {tag.name}
+                          </Badge>)}
+                        {(company.tags?.length || 0) > 2 && <span className="text-xs text-muted-foreground">
+                            +{(company.tags?.length || 0) - 2}
+                          </span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center gap-2">
+                        {company.assignedUsers && company.assignedUsers > 0 ? <Badge variant="secondary">
+                            {company.assignedUsers} utilisateur{company.assignedUsers !== 1 ? 's' : ''}
+                          </Badge> : <span className="text-sm text-muted-foreground">Aucune</span>}
+                        {company.hasCurrentUserAssignment && <Badge variant="outline" className="text-primary border-primary">
+                            Vous
+                          </Badge>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                      {new Date(company.updated_at).toLocaleDateString('fr-FR')}
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Voir les détails
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Modifier
+                          </DropdownMenuItem>
+                          {canDeleteCompanies && <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteCompany(company.id)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Supprimer
+                            </DropdownMenuItem>}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
-          </div>}
+          </div>
+        )}
         
-        {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-muted-foreground">
+        {/* Pagination */}
+        {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+            <p className="text-sm text-muted-foreground text-center sm:text-left">
               Affichage de {(currentPage - 1) * itemsPerPage + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
             </p>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="h-4 w-4" />
-                Précédent
+                <span className="hidden sm:inline ml-1">Précédent</span>
               </Button>
               <span className="text-sm text-muted-foreground">
-                Page {currentPage} sur {Math.ceil(totalCount / itemsPerPage)}
+                {currentPage} / {Math.ceil(totalCount / itemsPerPage)}
               </span>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}>
-                Suivant
+                <span className="hidden sm:inline mr-1">Suivant</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-          </div>}
-        {!isLoading && hasActiveFilters && <div className="mt-4">
+          </div>
+        )}
+        {!isLoading && hasActiveFilters && (
+          <div className="mt-4">
             <p className="text-sm text-muted-foreground">
               {filteredCompanies.length} entreprise{filteredCompanies.length !== 1 ? 's' : ''} trouvée{filteredCompanies.length !== 1 ? 's' : ''}
             </p>
-          </div>}
+          </div>
+        )}
       </CardContent>
     </Card>
+    {deleteDialog.dialog}
     </>;
 }

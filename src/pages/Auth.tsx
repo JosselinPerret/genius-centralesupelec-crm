@@ -67,14 +67,14 @@ export default function Auth() {
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
-                    <Input id="signin-email" name="email" type="email" placeholder="john@example.com" required />
+                    <Input id="signin-email" name="email" type="email" placeholder="email@exemple.com" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Mot de passe</Label>
                     <Input id="signin-password" name="password" type="password" required />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Signing In...' : 'Sign In'}
+                    {isLoading ? 'Connexion...' : 'Se connecter'}
                   </Button>
                 </form>
               </TabsContent>
@@ -83,18 +83,18 @@ export default function Auth() {
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Prénom Nom</Label>
-                    <Input id="signup-name" name="name" type="text" placeholder="John Doe" required />
+                    <Input id="signup-name" name="name" type="text" placeholder="Jean Dupont" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input id="signup-email" name="email" type="email" placeholder="john@example.com" required />
+                    <Input id="signup-email" name="email" type="email" placeholder="email@exemple.com" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Mot de passe</Label>
                     <Input id="signup-password" name="password" type="password" required />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                    {isLoading ? 'Création du compte...' : 'Créer un compte'}
                   </Button>
                 </form>
               </TabsContent>

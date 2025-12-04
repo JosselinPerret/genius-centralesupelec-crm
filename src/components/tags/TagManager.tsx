@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Edit3, Trash2, Save, X, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useConfirmDialog } from '@/components/ui/confirm-dialog';
+import { EmptyTags } from '@/components/ui/empty-state';
 
 interface Tag {
   id: string;
@@ -31,6 +33,15 @@ export function TagManager() {
   const [editColor, setEditColor] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Confirmation dialog for delete
+  const deleteTagDialog = useConfirmDialog({
+    title: 'Supprimer l\\'étiquette',
+    description: 'Êtes-vous sûr de vouloir supprimer cette étiquette ? Elle sera retirée de toutes les entreprises.',
+    confirmLabel: 'Supprimer',
+    cancelLabel: 'Annuler',
+    variant: 'destructive',
+  });
 
   useEffect(() => {
     loadTags();
@@ -70,12 +81,12 @@ export function TagManager() {
       loadTags();
       
       toast({
-        title: "Tag created",
-        description: "The tag has been created successfully.",
+        title: "Étiquette créée",
+        description: "L'étiquette a été créée avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -105,12 +116,12 @@ export function TagManager() {
       loadTags();
       
       toast({
-        title: "Tag updated",
-        description: "The tag has been updated successfully.",
+        title: "Étiquette modifiée",
+        description: "L'étiquette a été modifiée avec succès.",
       });
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -119,33 +130,33 @@ export function TagManager() {
     }
   };
 
-  const deleteTag = async (tagId: string) => {
-    if (!confirm('Are you sure you want to delete this tag? It will be removed from all companies.')) return;
-    
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('tags')
-        .delete()
-        .eq('id', tagId);
+  const deleteTag = (tagId: string) => {
+    deleteTagDialog.confirm(async () => {
+      setIsLoading(true);
+      try {
+        const { error } = await supabase
+          .from('tags')
+          .delete()
+          .eq('id', tagId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      loadTags();
-      
-      toast({
-        title: "Tag deleted",
-        description: "The tag has been deleted successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+        loadTags();
+        
+        toast({
+          title: "Étiquette supprimée",
+          description: "L'étiquette a été supprimée avec succès.",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    });
   };
 
   const startEditing = (tag: Tag) => {
@@ -161,17 +172,18 @@ export function TagManager() {
   };
 
   return (
+    <>
     <Card className="shadow-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Tag Management</CardTitle>
+          <CardTitle>Gestion des Étiquettes</CardTitle>
           <Button
             onClick={() => setIsAdding(true)}
             size="sm"
             disabled={isAdding}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Add Tag
+            Ajouter
           </Button>
         </div>
       </CardHeader>
@@ -179,17 +191,17 @@ export function TagManager() {
         {isAdding && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
             <div className="space-y-2">
-              <Label htmlFor="tag-name">Tag Name</Label>
+              <Label htmlFor="tag-name">Nom de l'étiquette</Label>
               <Input
                 id="tag-name"
                 value={newTagName}
                 onChange={(e) => setNewTagName(e.target.value)}
-                placeholder="Enter tag name"
+                placeholder="Entrez le nom de l'étiquette"
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Color</Label>
+              <Label>Couleur</Label>
               <div className="flex flex-wrap gap-2">
                 {defaultColors.map((color) => (
                   <button
@@ -206,9 +218,9 @@ export function TagManager() {
             </div>
             
             <div className="space-y-2">
-              <Label>Preview</Label>
+              <Label>Aperçu</Label>
               <Badge style={{ backgroundColor: newTagColor, color: 'white' }}>
-                {newTagName || 'Tag Name'}
+                {newTagName || 'Nom de l\'étiquette'}
               </Badge>
             </div>
             
@@ -223,7 +235,7 @@ export function TagManager() {
                 }}
               >
                 <X className="mr-2 h-4 w-4" />
-                Cancel
+                Annuler
               </Button>
               <Button
                 size="sm"
@@ -231,7 +243,7 @@ export function TagManager() {
                 disabled={isLoading || !newTagName.trim()}
               >
                 <Save className="mr-2 h-4 w-4" />
-                Create Tag
+                Créer
               </Button>
             </div>
           </div>
@@ -239,9 +251,7 @@ export function TagManager() {
 
         <div className="space-y-2">
           {tags.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No tags created yet. Add your first tag to get started.
-            </div>
+            <EmptyTags onAdd={() => setIsAdding(true)} />
           ) : (
             tags.map((tag) => (
               <div key={tag.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -250,7 +260,7 @@ export function TagManager() {
                     <Input
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Tag name"
+                      placeholder="Nom de l'étiquette"
                     />
                     
                     <div className="flex flex-wrap gap-2">
@@ -268,7 +278,7 @@ export function TagManager() {
                     </div>
                     
                     <Badge style={{ backgroundColor: editColor, color: 'white' }}>
-                      {editName || 'Tag Name'}
+                      {editName || 'Nom de l\'étiquette'}
                     </Badge>
                     
                     <div className="flex justify-end space-x-2">
@@ -278,7 +288,7 @@ export function TagManager() {
                         onClick={cancelEditing}
                       >
                         <X className="mr-2 h-4 w-4" />
-                        Cancel
+                        Annuler
                       </Button>
                       <Button
                         size="sm"
@@ -286,7 +296,7 @@ export function TagManager() {
                         disabled={isLoading || !editName.trim()}
                       >
                         <Save className="mr-2 h-4 w-4" />
-                        Save
+                        Enregistrer
                       </Button>
                     </div>
                   </div>
@@ -325,5 +335,7 @@ export function TagManager() {
         </div>
       </CardContent>
     </Card>
+    {deleteTagDialog.dialog}
+    </>
   );
 }

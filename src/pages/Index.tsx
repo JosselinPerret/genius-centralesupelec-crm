@@ -7,10 +7,15 @@ import { TagManager } from '@/components/tags/TagManager';
 import { UserManagement } from '@/components/users/UserManagement';
 import { AssignmentManager } from '@/components/assignments/AssignmentManager';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigationShortcuts } from '@/hooks/use-keyboard-shortcuts';
 
 const Index = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Enable keyboard shortcuts
+  useNavigationShortcuts();
+  
   const validTabs = ['dashboard', 'companies', 'assignments', 'users', 'tags'];
   const tabFromUrl = searchParams.get('tab');
   const initialTab = validTabs.includes(tabFromUrl || '') ? tabFromUrl! : 'dashboard';
