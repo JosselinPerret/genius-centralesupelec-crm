@@ -58,8 +58,8 @@ export function CompanyTable() {
   
   // Confirmation dialog for delete
   const deleteDialog = useConfirmDialog({
-    title: 'Supprimer l\'entreprise',
-    description: 'Êtes-vous sûr de vouloir supprimer cette entreprise ? Cette action est irréversible.',
+    title: "Supprimer l'entreprise",
+    description: "Êtes-vous sûr de vouloir supprimer cette entreprise ? Cette action est irréversible.",
     confirmLabel: 'Supprimer',
     cancelLabel: 'Annuler',
     variant: 'destructive',

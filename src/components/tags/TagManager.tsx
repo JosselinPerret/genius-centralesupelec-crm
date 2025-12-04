@@ -36,8 +36,8 @@ export function TagManager() {
   
   // Confirmation dialog for delete
   const deleteTagDialog = useConfirmDialog({
-    title: 'Supprimer l\\'étiquette',
-    description: 'Êtes-vous sûr de vouloir supprimer cette étiquette ? Elle sera retirée de toutes les entreprises.',
+    title: "Supprimer l'étiquette",
+    description: "Êtes-vous sûr de vouloir supprimer cette étiquette ? Elle sera retirée de toutes les entreprises.",
     confirmLabel: 'Supprimer',
     cancelLabel: 'Annuler',
     variant: 'destructive',
