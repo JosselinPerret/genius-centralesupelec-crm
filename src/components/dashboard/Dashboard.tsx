@@ -6,13 +6,6 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/crm';
 import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent 
-} from '@/components/ui/chart';
-import { 
   PieChart, 
   Pie, 
   Cell, 
@@ -23,7 +16,8 @@ import {
   CartesianGrid,
   LineChart,
   Line,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Tooltip
 } from 'recharts';
 
 export function Dashboard() {
@@ -137,14 +131,6 @@ export function Dashboard() {
     };
   });
 
-  const chartConfig = {
-    contacted: { label: 'Contacté', color: 'hsl(260, 60%, 50%)' },
-    inDiscussion: { label: 'En discussion', color: 'hsl(45, 100%, 50%)' },
-    coming: { label: 'Vient', color: 'hsl(142, 71%, 45%)' },
-    notComing: { label: 'Ne vient pas', color: 'hsl(0, 71%, 50%)' },
-    nextYear: { label: 'Année prochaine', color: 'hsl(200, 60%, 50%)' }
-  };
-
   const recentCompanies = companies.slice(0, 5);
 
   return (
@@ -200,14 +186,23 @@ export function Dashboard() {
               <div className="w-full h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Tooltip 
+                      formatter={(value: number, name: string) => [value, name]}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
                     <Pie
                       data={statusDistribution.filter(item => item.value > 0)}
                       cx="50%"
                       cy="50%"
                       outerRadius="70%"
                       dataKey="value"
-                      label={({ name, value }) => `${value}`}
+                      nameKey="name"
+                      label={({ value }) => `${value}`}
                       labelLine={false}
                     >
                       {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
@@ -237,7 +232,14 @@ export function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} width={35} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
                     <Bar dataKey="contacted" fill="hsl(260, 60%, 50%)" name="Contacté" />
                     <Bar dataKey="inDiscussion" fill="hsl(45, 100%, 50%)" name="En discussion" />
                     <Bar dataKey="coming" fill="hsl(142, 71%, 45%)" name="Vient" />
