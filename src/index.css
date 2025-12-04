@@ -1,140 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system - Glassmorphism Theme
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 27%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card: 0 0% 100% / 0.7;
+    --card-foreground: 220 25% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover: 0 0% 100% / 0.95;
+    --popover-foreground: 220 25% 20%;
 
-    --primary: 221 83% 53%;
+    --primary: 230 80% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 220 30% 94%;
+    --secondary-foreground: 220 25% 20%;
 
-    --muted: 217 10% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 213 27% 84%;
-    --accent-foreground: 215 25% 27%;
+    --accent: 250 80% 65%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 73% 41%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --border: 220 20% 88%;
+    --input: 220 20% 92%;
+    --ring: 230 80% 60%;
 
     /* CRM specific colors */
-    --success: 142 71% 45%;
+    --success: 150 70% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 43 74% 66%;
-    --warning-foreground: 215 25% 27%;
-    --info: 199 89% 48%;
+    --warning: 38 90% 55%;
+    --warning-foreground: 38 90% 15%;
+    --info: 200 90% 50%;
     --info-foreground: 0 0% 100%;
 
     /* Status colors */
-    --status-prospect: 43 74% 66%;
-    --status-active: 142 71% 45%;
-    --status-inactive: 215 16% 47%;
-    --status-former: 0 73% 41%;
+    --status-prospect: 38 90% 55%;
+    --status-active: 150 70% 45%;
+    --status-inactive: 220 15% 55%;
+    --status-former: 0 75% 55%;
+
+    /* Glassmorphism specific */
+    --glass-bg: 0 0% 100% / 0.6;
+    --glass-border: 0 0% 100% / 0.3;
+    --glass-shadow: 230 80% 60% / 0.1;
+    --blur-strength: 16px;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(213 27% 84%));
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%), hsl(217 10% 95%));
+    --gradient-primary: linear-gradient(135deg, hsl(230 80% 60%), hsl(250 80% 65%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 20% 97%), hsl(220 15% 92%));
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(0 0% 100% / 0.4));
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(230 80% 90%) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(250 80% 88%) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(200 80% 90%) 0px, transparent 50%);
 
-    /* Shadows */
-    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-elevated: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    /* Enhanced Shadows */
+    --shadow-card: 0 4px 24px -4px hsl(230 80% 60% / 0.08), 0 2px 8px -2px hsl(0 0% 0% / 0.04);
+    --shadow-elevated: 0 20px 40px -8px hsl(230 80% 60% / 0.15), 0 8px 16px -4px hsl(0 0% 0% / 0.08);
+    --shadow-glow: 0 0 30px hsl(230 80% 60% / 0.2);
+    --shadow-inner: inset 0 1px 2px hsl(0 0% 100% / 0.5);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100% / 0.5;
+    --sidebar-foreground: 220 25% 25%;
+    --sidebar-primary: 230 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 80% 60% / 0.1;
+    --sidebar-accent-foreground: 230 80% 50%;
+    --sidebar-border: 220 20% 88%;
+    --sidebar-ring: 230 80% 60%;
   }
 
   .dark {
-    --background: 215 28% 17%;
-    --foreground: 210 20% 98%;
+    --background: 225 25% 10%;
+    --foreground: 220 20% 95%;
 
-    --card: 215 28% 17%;
-    --card-foreground: 210 20% 98%;
+    --card: 225 25% 14% / 0.7;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 225 25% 12% / 0.95;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 221 83% 53%;
+    --primary: 230 75% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 27%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 225 20% 20%;
+    --secondary-foreground: 220 20% 95%;
 
-    --muted: 215 25% 27%;
-    --muted-foreground: 217 10% 64%;
+    --muted: 225 20% 18%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 215 25% 27%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 250 70% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 73% 41%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 27%;
-    --input: 215 25% 27%;
-    --ring: 221 83% 53%;
+    --border: 225 20% 22%;
+    --input: 225 20% 20%;
+    --ring: 230 75% 65%;
 
     /* CRM specific colors - dark mode */
-    --success: 142 71% 45%;
+    --success: 150 65% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 43 74% 66%;
-    --warning-foreground: 215 28% 17%;
-    --info: 199 89% 48%;
+    --warning: 38 85% 55%;
+    --warning-foreground: 38 90% 10%;
+    --info: 200 85% 55%;
     --info-foreground: 0 0% 100%;
 
     /* Status colors - dark mode */
-    --status-prospect: 43 74% 66%;
-    --status-active: 142 71% 45%;
-    --status-inactive: 217 10% 64%;
-    --status-former: 0 73% 41%;
+    --status-prospect: 38 85% 55%;
+    --status-active: 150 65% 45%;
+    --status-inactive: 220 15% 55%;
+    --status-former: 0 70% 50%;
+
+    /* Glassmorphism specific - dark */
+    --glass-bg: 225 25% 15% / 0.6;
+    --glass-border: 0 0% 100% / 0.1;
+    --glass-shadow: 230 75% 65% / 0.15;
 
     /* Gradients - dark mode */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(215 25% 27%));
-    --gradient-subtle: linear-gradient(180deg, hsl(215 28% 17%), hsl(215 25% 27%));
+    --gradient-primary: linear-gradient(135deg, hsl(230 75% 65%), hsl(250 70% 55%));
+    --gradient-subtle: linear-gradient(180deg, hsl(225 25% 10%), hsl(225 20% 14%));
+    --gradient-glass: linear-gradient(135deg, hsl(225 25% 18% / 0.8), hsl(225 25% 12% / 0.4));
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(230 60% 25%) 0px, transparent 50%),
+                     radial-gradient(at 80% 0%, hsl(250 50% 22%) 0px, transparent 50%),
+                     radial-gradient(at 0% 50%, hsl(200 50% 25%) 0px, transparent 50%);
 
-    /* Shadows - dark mode */
-    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
-    --shadow-elevated: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    /* Enhanced Shadows - dark mode */
+    --shadow-card: 0 4px 24px -4px hsl(0 0% 0% / 0.3), 0 2px 8px -2px hsl(0 0% 0% / 0.2);
+    --shadow-elevated: 0 20px 40px -8px hsl(0 0% 0% / 0.4), 0 8px 16px -4px hsl(0 0% 0% / 0.25);
+    --shadow-glow: 0 0 30px hsl(230 75% 65% / 0.25);
+
+    /* Sidebar - dark */
+    --sidebar-background: 225 25% 12% / 0.5;
+    --sidebar-foreground: 220 20% 90%;
+    --sidebar-primary: 230 75% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 230 75% 65% / 0.15;
+    --sidebar-accent-foreground: 230 75% 70%;
+    --sidebar-border: 225 20% 22%;
+    --sidebar-ring: 230 75% 65%;
   }
 }
 
@@ -144,6 +164,172 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
   }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+@layer components {
+  /* Glassmorphism utilities */
+  .glass {
+    @apply bg-card backdrop-blur-xl border border-white/20;
+    box-shadow: var(--shadow-card), var(--shadow-inner);
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-2xl;
+    background: hsl(var(--glass-bg));
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--shadow-elevated), var(--shadow-inner);
+  }
+
+  .glass-subtle {
+    @apply backdrop-blur-md;
+    background: hsl(var(--glass-bg));
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Gradient mesh background */
+  .bg-mesh {
+    background-image: var(--gradient-mesh);
+    background-attachment: fixed;
+  }
+
+  /* Glow effects */
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-hover:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* Interactive hover effects */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-0.5;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  /* Animated border gradient */
+  .border-gradient {
+    position: relative;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+  }
+
+  .border-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+    background-size: 200% 100%;
+  }
+
+  /* Stagger children animation delays */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
 }

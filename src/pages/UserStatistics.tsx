@@ -58,7 +58,6 @@ export default function UserStatistics() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Only admin and manager can access this page
   const canAccess = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
 
   useEffect(() => {
@@ -94,7 +93,6 @@ export default function UserStatistics() {
   const loadUserStatistics = async (userId: string) => {
     setIsLoading(true);
     try {
-      // Get user profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -104,7 +102,6 @@ export default function UserStatistics() {
       if (profileError) throw profileError;
       setSelectedUser(profileData);
 
-      // Get assignments for this user
       const { data: assignments, error: assignmentsError } = await supabase
         .from('assignments')
         .select('company_id')
@@ -115,7 +112,6 @@ export default function UserStatistics() {
       const companyIds = assignments?.map(a => a.company_id) || [];
 
       if (companyIds.length > 0) {
-        // Get companies assigned to this user
         const { data: companiesData, error: companiesError } = await supabase
           .from('companies')
           .select('*')
@@ -164,7 +160,6 @@ export default function UserStatistics() {
         description: "L'utilisateur a été supprimé avec succès.",
       });
       
-      // Reload users and select another one
       await loadUsers();
       setSelectedUser(null);
       setCompanies([]);
@@ -194,16 +189,16 @@ export default function UserStatistics() {
   const conversionRate = totalAssigned > 0 ? ((coming / totalAssigned) * 100).toFixed(1) : '0';
 
   const allStatuses = {
-    'NOT_TO_CONTACT': { name: 'Ne pas contacter', color: 'hsl(0, 0%, 50%)' },
-    'TO_CONTACT': { name: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
-    'CONTACTED': { name: 'Contacté', color: 'hsl(260, 60%, 50%)' },
-    'FIRST_FOLLOWUP': { name: '1ère relance', color: 'hsl(280, 60%, 50%)' },
-    'SECOND_FOLLOWUP': { name: '2ème relance', color: 'hsl(300, 60%, 50%)' },
-    'THIRD_FOLLOWUP': { name: '3ème relance', color: 'hsl(320, 60%, 50%)' },
-    'IN_DISCUSSION': { name: 'En discussion', color: 'hsl(45, 100%, 50%)' },
-    'COMING': { name: 'Vient', color: 'hsl(142, 71%, 45%)' },
-    'NOT_COMING': { name: 'Ne vient pas', color: 'hsl(0, 71%, 50%)' },
-    'NEXT_YEAR': { name: 'Année prochaine', color: 'hsl(200, 60%, 50%)' }
+    'NOT_TO_CONTACT': { name: 'Ne pas contacter', color: 'hsl(220, 15%, 55%)' },
+    'TO_CONTACT': { name: 'A démarcher', color: 'hsl(230, 80%, 60%)' },
+    'CONTACTED': { name: 'Contacté', color: 'hsl(260, 70%, 55%)' },
+    'FIRST_FOLLOWUP': { name: '1ère relance', color: 'hsl(280, 65%, 55%)' },
+    'SECOND_FOLLOWUP': { name: '2ème relance', color: 'hsl(300, 60%, 55%)' },
+    'THIRD_FOLLOWUP': { name: '3ème relance', color: 'hsl(320, 65%, 55%)' },
+    'IN_DISCUSSION': { name: 'En discussion', color: 'hsl(38, 90%, 55%)' },
+    'COMING': { name: 'Vient', color: 'hsl(150, 70%, 45%)' },
+    'NOT_COMING': { name: 'Ne vient pas', color: 'hsl(0, 75%, 55%)' },
+    'NEXT_YEAR': { name: 'Année prochaine', color: 'hsl(200, 70%, 55%)' }
   };
 
   const statusDistribution = Object.entries(allStatuses).map(([status, info]) => ({
@@ -215,204 +210,237 @@ export default function UserStatistics() {
 
   return (
     <MainLayout>
-      <div className="p-4 md:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-8 animate-fade-in">
+        {/* Header */}
+        <div className="flex flex-col gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="w-fit gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
+          </Button>
           <div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="mb-2"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour à l'accueil
-            </Button>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Statistiques Utilisateur</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+              Statistiques Utilisateur
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Consultez les performances et activités des utilisateurs
+            </p>
           </div>
         </div>
 
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Sélectionner un utilisateur</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Choisir un utilisateur" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((user) => (
-                  <SelectItem key={user.user_id} value={user.user_id}>
-                    {user.name} - {user.role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {canDeleteSelectedUser && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="icon" disabled={isDeleting}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Supprimer cet utilisateur ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Êtes-vous sûr de vouloir supprimer <strong>{selectedUser?.name}</strong> ? 
-                      Cette action est irréversible et supprimera toutes les données associées à cet utilisateur.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={deleteUser}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Supprimer
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {selectedUser && (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatsCard
-              title="Entreprises Assignées"
-              value={totalAssigned}
-              description="Total des assignations"
-              icon={Building2}
-            />
-            <StatsCard
-              title="Vient"
-              value={coming}
-              description="Entreprises confirmées"
-              icon={Users}
-            />
-            <StatsCard
-              title="A Démarcher"
-              value={toContact}
-              description="En attente de contact"
-              icon={Target}
-            />
-            <StatsCard
-              title="Taux de Conversion"
-              value={`${conversionRate}%`}
-              description="Ratio de succès"
-              icon={TrendingUp}
-            />
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Répartition des Statuts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-                  </div>
-                ) : (
-                  <ChartContainer config={{}} className="h-[300px]">
-                    <PieChart>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Pie
-                        data={statusDistribution.filter(item => item.value > 0)}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}`}
-                      >
-                        {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ChartContainer>
-                )}
-                {companies.length === 0 && !isLoading && (
-                  <p className="text-muted-foreground text-sm text-center py-8">
-                    Aucune donnée disponible
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Détail des Statuts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {statusDistribution.map((status) => (
-                      <div key={status.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: status.color }}
-                          />
-                          <span className="text-sm text-foreground">{status.name}</span>
+        {/* User Selection */}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Sélectionner un utilisateur</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Choisir un utilisateur" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-gradient-primary flex items-center justify-center text-[10px] font-semibold text-primary-foreground">
+                          {user.name?.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-medium text-foreground">{status.value}</span>
+                        <span>{user.name}</span>
+                        <span className="text-muted-foreground">• {user.role}</span>
                       </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {canDeleteSelectedUser && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="icon" disabled={isDeleting} className="shrink-0">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="glass-strong">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Supprimer cet utilisateur ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Êtes-vous sûr de vouloir supprimer <strong>{selectedUser?.name}</strong> ? 
+                        Cette action est irréversible et supprimera toutes les données associées.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annuler</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={deleteUser}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Supprimer
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {selectedUser && (
+          <>
+            {/* Stats Grid */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatsCard
+                title="Entreprises Assignées"
+                value={totalAssigned}
+                description="Total des assignations"
+                icon={Building2}
+              />
+              <StatsCard
+                title="Vient"
+                value={coming}
+                description="Entreprises confirmées"
+                icon={Users}
+              />
+              <StatsCard
+                title="A Démarcher"
+                value={toContact}
+                description="En attente de contact"
+                icon={Target}
+              />
+              <StatsCard
+                title="Taux de Conversion"
+                value={`${conversionRate}%`}
+                description="Ratio de succès"
+                icon={TrendingUp}
+              />
+            </div>
+
+            {/* Charts */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Répartition des Statuts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin h-8 w-8 border-3 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  ) : companies.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-12">
+                      Aucune donnée disponible
+                    </p>
+                  ) : (
+                    <ChartContainer config={{}} className="h-[280px]">
+                      <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Pie
+                          data={statusDistribution.filter(item => item.value > 0)}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          innerRadius={50}
+                          dataKey="value"
+                          strokeWidth={2}
+                          stroke="hsl(var(--background))"
+                        >
+                          {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Détail des Statuts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin h-8 w-8 border-3 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+                      {statusDistribution.map((status) => (
+                        <div 
+                          key={status.name} 
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full shadow-sm" 
+                              style={{ backgroundColor: status.color }}
+                            />
+                            <span className="text-sm font-medium text-foreground">{status.name}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-foreground bg-background/50 px-2.5 py-1 rounded-md">
+                            {status.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Companies List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Entreprises Assignées</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin h-8 w-8 border-3 border-primary border-t-transparent rounded-full" />
+                  </div>
+                ) : companies.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">
+                      Aucune entreprise assignée à cet utilisateur.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {companies.map((company, index) => (
+                      <Link
+                        key={company.id}
+                        to={`/company/${company.id}`}
+                        className="flex items-center justify-between p-4 rounded-xl bg-muted/20 hover:bg-muted/40 border border-transparent hover:border-border/50 transition-all duration-200 group"
+                        style={{ animationDelay: `${index * 0.05}s` }}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-primary/10 flex items-center justify-center group-hover:bg-gradient-primary/20 transition-colors">
+                            <Building2 className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                              {company.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Modifié le {new Date(company.updated_at).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                        </div>
+                        <StatusBadge status={company.status as any} />
+                      </Link>
                     ))}
                   </div>
                 )}
               </CardContent>
             </Card>
-          </div>
-
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Entreprises Assignées</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : companies.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Aucune entreprise assignée à cet utilisateur.
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {companies.map((company) => (
-                    <Link
-                      key={company.id}
-                      to={`/company/${company.id}`}
-                      className="flex items-center justify-between border-b border-border pb-3 last:border-0 hover:bg-accent/50 transition-colors p-2 rounded -m-2"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{company.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Modifié le {new Date(company.updated_at).toLocaleDateString('fr-FR')}
-                        </p>
-                      </div>
-                      <StatusBadge status={company.status as any} />
-                    </Link>
-                  ))}
-                </div>
-              )}
-        </CardContent>
-      </Card>
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
     </MainLayout>
   );
 }

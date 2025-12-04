@@ -51,14 +51,11 @@ export function Sidebar({
   const handleTabClick = (tab: string) => {
     console.log('handleTabClick called with:', tab, 'onTabChange:', !!onTabChange);
     if (onTabChange) {
-      // If onTabChange is provided (we're on the main page), use it
       onTabChange(tab);
     } else {
-      // If not, navigate to home with the tab as a query parameter
       console.log('Navigating to:', `/?tab=${tab}`);
       navigate(`/?tab=${tab}`);
     }
-    // Close sidebar on mobile after tab click
     if (isMobile) {
       close();
     }
@@ -66,108 +63,138 @@ export function Sidebar({
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    // Close sidebar on mobile after navigation
     if (isMobile) {
       close();
     }
   };
 
-  // Sidebar content component for reusability
+  const NavButton = ({ item, isActive }: { item: typeof navigation[0], isActive: boolean }) => {
+    const Icon = item.icon;
+    return (
+      <Button 
+        variant="ghost" 
+        className={cn(
+          "w-full justify-start gap-3 h-11 px-3 text-sm font-medium transition-all duration-200",
+          isActive 
+            ? "bg-primary/10 text-primary border-l-2 border-primary rounded-l-none" 
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        )} 
+        onClick={() => handleTabClick(item.id)}
+        type="button"
+      >
+        <Icon className={cn(
+          "h-5 w-5 flex-shrink-0 transition-colors",
+          isActive ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span>{item.name}</span>
+      </Button>
+    );
+  };
+
   const SidebarContent = () => (
-    <>
-      <div className="flex h-16 items-center border-b border-border px-4 md:px-6">
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex h-16 items-center border-b border-sidebar-border px-4">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center space-x-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <h1 className="text-lg md:text-xl font-bold text-foreground hidden sm:block">CRM - Genius</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary shadow-md">
+              <Building2 className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-base font-bold text-foreground">CRM Genius</h1>
+              <span className="text-xs text-muted-foreground">Gestion d'entreprises</span>
+            </div>
           </div>
-          {profile && <Badge variant="secondary" className="text-xs">
-            {profile.role}
-          </Badge>}
         </div>
       </div>
       
-      <nav className="flex-1 space-y-1 px-2 md:px-3 py-4 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded">
-        {navigation.map(item => {
-          const Icon = item.icon;
-          return (
-            <Button 
-              key={item.id} 
-              variant={activeTab === item.id ? "secondary" : "ghost"} 
-              className={cn(
-                "w-full justify-start text-sm md:text-base cursor-pointer",
-                activeTab === item.id && "bg-primary/10 text-primary font-medium"
-              )} 
-              onClick={() => handleTabClick(item.id)}
-              type="button"
-            >
-              <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-              <span className="hidden sm:inline">{item.name}</span>
-              <span className="inline sm:hidden text-xs">{item.name.split(' ')[0]}</span>
-            </Button>
-          );
-        })}
+      {/* User info */}
+      {profile && (
+        <div className="px-4 py-3 border-b border-sidebar-border">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
+              {profile.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{profile.name}</p>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                {profile.role}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Menu principal
+        </p>
+        {navigation.map(item => (
+          <NavButton key={item.id} item={item} isActive={activeTab === item.id} />
+        ))}
         
-        <div className="pt-4 mt-4 border-t border-border">
+        <div className="pt-4 mt-4 border-t border-sidebar-border">
+          <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Statistiques
+          </p>
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-sm md:text-base"
+            className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             onClick={() => handleNavigate('/my-statistics')}
           >
-            <UserCircle className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="hidden sm:inline">Mes Statistiques</span>
-            <span className="inline sm:hidden text-xs">Stats</span>
+            <UserCircle className="h-5 w-5 text-muted-foreground" />
+            <span>Mes Statistiques</span>
           </Button>
           
-          {canViewUserStats && <Button 
-            variant="ghost" 
-            className="w-full justify-start text-sm md:text-base"
-            onClick={() => handleNavigate('/user-statistics')}
-          >
-            <BarChart3 className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="hidden sm:inline">Stats Utilisateurs</span>
-            <span className="inline sm:hidden text-xs">Utilisateurs</span>
-          </Button>}
+          {canViewUserStats && (
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              onClick={() => handleNavigate('/user-statistics')}
+            >
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              <span>Stats Utilisateurs</span>
+            </Button>
+          )}
           
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-sm md:text-base"
+            className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             onClick={() => handleNavigate('/leaderboard')}
           >
-            <Trophy className="mr-3 h-5 w-5 flex-shrink-0" />
-            <span className="hidden sm:inline">Classement</span>
-            <span className="inline sm:hidden text-xs">Class.</span>
+            <Trophy className="h-5 w-5 text-muted-foreground" />
+            <span>Classement</span>
           </Button>
         </div>
       </nav>
 
-      <div className="border-t border-border p-2 md:p-3 space-y-1">
+      {/* Footer */}
+      <div className="border-t border-sidebar-border p-3 space-y-1">
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-sm md:text-base"
+          className="w-full justify-start gap-3 h-10 px-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={toggleTheme}
           title={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
         >
           {isDark ? (
-            <Sun className="mr-3 h-5 w-5 flex-shrink-0" />
+            <Sun className="h-5 w-5 text-warning" />
           ) : (
-            <Moon className="mr-3 h-5 w-5 flex-shrink-0" />
+            <Moon className="h-5 w-5 text-muted-foreground" />
           )}
-          <span className="hidden sm:inline">{isDark ? "Mode clair" : "Mode sombre"}</span>
-          <span className="inline sm:hidden text-xs">{isDark ? "Clair" : "Sombre"}</span>
+          <span>{isDark ? "Mode clair" : "Mode sombre"}</span>
         </Button>
 
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-destructive hover:text-destructive text-sm md:text-base"
+          className="w-full justify-start gap-3 h-10 px-3 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
           onClick={signOut}
         >
-          <LogOut className="mr-3 h-5 w-5 flex-shrink-0" />
-          <span className="hidden sm:inline">Déconnexion</span>
-          <span className="inline sm:hidden text-xs">Sortir</span>
+          <LogOut className="h-5 w-5" />
+          <span>Déconnexion</span>
         </Button>
       </div>
-    </>
+    </div>
   );
 
   // Mobile view with overlay
@@ -175,30 +202,34 @@ export function Sidebar({
     return (
       <>
         {/* Header with toggle button */}
-        <div className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border flex items-center px-4 z-40">
+        <div className="fixed top-0 left-0 right-0 h-16 glass-strong border-b border-border/50 flex items-center px-4 z-40">
           <Button 
             variant="ghost" 
             size="icon"
             onClick={toggle}
-            className="mr-4"
+            className="mr-4 hover:bg-primary/10"
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Building2 className="h-6 w-6 text-primary" />
-          <h1 className="ml-2 font-bold text-foreground">CRM</h1>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-primary shadow-sm">
+              <Building2 className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <h1 className="font-bold text-foreground">CRM Genius</h1>
+          </div>
         </div>
 
         {/* Overlay */}
         {isOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-30"
+            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-30 animate-fade-in"
             onClick={close}
           />
         )}
 
         {/* Sidebar drawer */}
         <div className={cn(
-          "fixed inset-y-0 left-0 w-64 bg-card border-r border-border z-40 flex flex-col transition-transform duration-300 ease-in-out overflow-hidden",
+          "fixed inset-y-0 left-0 w-72 glass-strong border-r border-border/50 z-40 flex flex-col transition-transform duration-300 ease-out overflow-hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )} style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}>
           <SidebarContent />
@@ -209,7 +240,7 @@ export function Sidebar({
 
   // Desktop view
   return (
-    <div className="hidden md:flex h-screen w-64 flex-col bg-card border-r border-border sticky top-0">
+    <div className="hidden md:flex h-screen w-72 flex-col glass-strong border-r border-border/50 sticky top-0">
       <SidebarContent />
     </div>
   );

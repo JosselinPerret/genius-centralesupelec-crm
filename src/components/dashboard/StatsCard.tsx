@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StatsCardProps {
   title: string;
@@ -10,28 +11,37 @@ interface StatsCardProps {
     value: number;
     isPositive: boolean;
   };
+  className?: string;
 }
 
-export function StatsCard({ title, value, description, icon: Icon, trend }: StatsCardProps) {
+export function StatsCard({ title, value, description, icon: Icon, trend, className }: StatsCardProps) {
   return (
-    <Card className="shadow-card hover:shadow-elevated transition-shadow duration-200">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-primary" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
-        {trend && (
-          <div className="flex items-center mt-1">
-            <span className={`text-xs ${trend.isPositive ? 'text-success' : 'text-destructive'}`}>
-              {trend.isPositive ? '+' : '-'}{trend.value}%
-            </span>
-            <span className="text-xs text-muted-foreground ml-1">par rapport à la semaine dernière</span>
+    <Card className={cn("group hover-lift", className)}>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
+              {trend && (
+                <span className={cn(
+                  "text-xs font-medium px-1.5 py-0.5 rounded-full",
+                  trend.isPositive 
+                    ? "bg-success/10 text-success" 
+                    : "bg-destructive/10 text-destructive"
+                )}>
+                  {trend.isPositive ? '+' : '-'}{trend.value}%
+                </span>
+              )}
+            </div>
+            {description && (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            )}
           </div>
-        )}
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+            <Icon className="h-6 w-6" />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
