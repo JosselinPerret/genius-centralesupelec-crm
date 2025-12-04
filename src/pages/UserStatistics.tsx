@@ -22,14 +22,11 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from '@/components/ui/chart';
-import { 
   PieChart, 
   Pie, 
-  Cell 
+  Cell,
+  ResponsiveContainer,
+  Tooltip
 } from 'recharts';
 
 interface Profile {
@@ -335,25 +332,35 @@ export default function UserStatistics() {
                       Aucune donnée disponible
                     </p>
                   ) : (
-                    <ChartContainer config={{}} className="h-[280px]">
-                      <PieChart>
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Pie
-                          data={statusDistribution.filter(item => item.value > 0)}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          innerRadius={50}
-                          dataKey="value"
-                          strokeWidth={2}
-                          stroke="hsl(var(--background))"
-                        >
-                          {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                      </PieChart>
-                    </ChartContainer>
+                    <div className="h-[280px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Tooltip 
+                            formatter={(value: number, name: string) => [value, name]}
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--background))', 
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Pie
+                            data={statusDistribution.filter(item => item.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius="70%"
+                            innerRadius="35%"
+                            dataKey="value"
+                            nameKey="name"
+                            strokeWidth={2}
+                            stroke="hsl(var(--background))"
+                          >
+                            {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   )}
                 </CardContent>
               </Card>

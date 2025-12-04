@@ -9,14 +9,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent 
-} from '@/components/ui/chart';
-import { 
   PieChart, 
   Pie, 
-  Cell 
+  Cell,
+  ResponsiveContainer,
+  Tooltip
 } from 'recharts';
 
 interface Company {
@@ -98,13 +95,6 @@ export default function MyStatistics() {
     label: info.name
   }));
 
-  const chartConfig = {
-    toContact: { label: 'A démarcher', color: 'hsl(210, 100%, 50%)' },
-    coming: { label: 'Vient', color: 'hsl(142, 71%, 45%)' },
-    inDiscussion: { label: 'En discussion', color: 'hsl(45, 100%, 50%)' },
-    contacted: { label: 'Contacté', color: 'hsl(260, 60%, 50%)' }
-  };
-
   return (
     <MainLayout>
       <div className="p-4 md:p-6 space-y-6">
@@ -164,23 +154,33 @@ export default function MyStatistics() {
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Pie
-                    data={statusDistribution.filter(item => item.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip 
+                      formatter={(value: number, name: string) => [value, name]}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Pie
+                      data={statusDistribution.filter(item => item.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      dataKey="value"
+                      nameKey="name"
+                      label={({ value }) => `${value}`}
+                    >
+                      {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             )}
             {companies.length === 0 && (
               <p className="text-muted-foreground text-sm text-center py-8">
