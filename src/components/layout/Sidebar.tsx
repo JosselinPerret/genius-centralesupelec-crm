@@ -1,6 +1,7 @@
-import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -72,6 +73,36 @@ export function Sidebar({
 
   const NavButton = ({ item, isActive }: { item: typeof navigation[0], isActive: boolean }) => {
     const Icon = item.icon;
+    
+    // Collapsed mode - icon only with tooltip
+    if (!isOpen && !isMobile) {
+      return (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "w-full justify-center h-11 px-3 transition-all duration-200",
+                isActive 
+                  ? "bg-primary/10 text-primary border-l-2 border-primary rounded-l-none" 
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              )} 
+              onClick={() => handleTabClick(item.id)}
+              type="button"
+            >
+              <Icon className={cn(
+                "h-5 w-5 flex-shrink-0 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={10}>
+            {item.name}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+    
     return (
       <Button 
         variant="ghost" 
@@ -93,113 +124,225 @@ export function Sidebar({
     );
   };
 
-  const SidebarContent = () => (
+  const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex h-16 items-center border-b border-sidebar-border px-4">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary shadow-md">
+          <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary shadow-md flex-shrink-0">
               <Building2 className="h-5 w-5 text-primary-foreground" />
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-base font-bold text-foreground">CRM Genius</h1>
-              <span className="text-xs text-muted-foreground">Gestion d'entreprises</span>
-            </div>
+            {!collapsed && (
+              <div className="flex flex-col">
+                <h1 className="text-base font-bold text-foreground">CRM Genius</h1>
+                <span className="text-xs text-muted-foreground">Gestion d'entreprises</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
       
       {/* User info */}
       {profile && (
-        <div className="px-4 py-3 border-b border-sidebar-border">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
-              {profile.name?.charAt(0).toUpperCase() || 'U'}
+        <div className={cn("px-4 py-3 border-b border-sidebar-border", collapsed && "px-2")}>
+          {collapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <div className="flex items-center justify-center p-2 rounded-lg bg-sidebar-accent/50">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
+                    {profile.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={10}>
+                <div>
+                  <p className="font-medium">{profile.name}</p>
+                  <p className="text-xs text-muted-foreground">{profile.role}</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
+              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
+                {profile.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{profile.name}</p>
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                  {profile.role}
+                </Badge>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{profile.name}</p>
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-normal">
-                {profile.role}
-              </Badge>
-            </div>
-          </div>
+          )}
         </div>
       )}
       
       {/* Search */}
-      <div className="px-3 pt-3">
-        <SearchTrigger onClick={globalSearch.open} />
-      </div>
+      {!collapsed && (
+        <div className="px-3 pt-3">
+          <SearchTrigger onClick={globalSearch.open} />
+        </div>
+      )}
       
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Menu principal
-        </p>
+      <nav className={cn("flex-1 px-3 py-4 space-y-1 overflow-y-auto", collapsed && "px-2")}>
+        {!collapsed && (
+          <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Menu principal
+          </p>
+        )}
         {navigation.map(item => (
           <NavButton key={item.id} item={item} isActive={activeTab === item.id} />
         ))}
         
         <div className="pt-4 mt-4 border-t border-sidebar-border">
-          <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Statistiques
-          </p>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            onClick={() => handleNavigate('/my-statistics')}
-          >
-            <UserCircle className="h-5 w-5 text-muted-foreground" />
-            <span>Mes Statistiques</span>
-          </Button>
-          
-          {canViewUserStats && (
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              onClick={() => handleNavigate('/user-statistics')}
-            >
-              <BarChart3 className="h-5 w-5 text-muted-foreground" />
-              <span>Stats Utilisateurs</span>
-            </Button>
+          {!collapsed && (
+            <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Statistiques
+            </p>
           )}
           
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            onClick={() => handleNavigate('/leaderboard')}
-          >
-            <Trophy className="h-5 w-5 text-muted-foreground" />
-            <span>Classement</span>
-          </Button>
+          {collapsed ? (
+            <>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11 px-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={() => handleNavigate('/my-statistics')}
+                  >
+                    <UserCircle className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={10}>Mes Statistiques</TooltipContent>
+              </Tooltip>
+              
+              {canViewUserStats && (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-center h-11 px-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      onClick={() => handleNavigate('/user-statistics')}
+                    >
+                      <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={10}>Stats Utilisateurs</TooltipContent>
+                </Tooltip>
+              )}
+              
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-center h-11 px-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    onClick={() => handleNavigate('/leaderboard')}
+                  >
+                    <Trophy className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={10}>Classement</TooltipContent>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                onClick={() => handleNavigate('/my-statistics')}
+              >
+                <UserCircle className="h-5 w-5 text-muted-foreground" />
+                <span>Mes Statistiques</span>
+              </Button>
+              
+              {canViewUserStats && (
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  onClick={() => handleNavigate('/user-statistics')}
+                >
+                  <BarChart3 className="h-5 w-5 text-muted-foreground" />
+                  <span>Stats Utilisateurs</span>
+                </Button>
+              )}
+              
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start gap-3 h-11 px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                onClick={() => handleNavigate('/leaderboard')}
+              >
+                <Trophy className="h-5 w-5 text-muted-foreground" />
+                <span>Classement</span>
+              </Button>
+            </>
+          )}
         </div>
       </nav>
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-3 space-y-1">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start gap-3 h-10 px-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
-          onClick={toggleTheme}
-          title={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
-        >
-          {isDark ? (
-            <Sun className="h-5 w-5 text-warning" />
-          ) : (
-            <Moon className="h-5 w-5 text-muted-foreground" />
-          )}
-          <span>{isDark ? "Mode clair" : "Mode sombre"}</span>
-        </Button>
+        {collapsed ? (
+          <>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-center h-10 px-3 text-sidebar-foreground hover:bg-sidebar-accent"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? (
+                    <Sun className="h-5 w-5 text-warning" />
+                  ) : (
+                    <Moon className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={10}>
+                {isDark ? "Mode clair" : "Mode sombre"}
+              </TooltipContent>
+            </Tooltip>
 
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start gap-3 h-10 px-3 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
-          onClick={signOut}
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Déconnexion</span>
-        </Button>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-center h-10 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={signOut}
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={10}>Déconnexion</TooltipContent>
+            </Tooltip>
+          </>
+        ) : (
+          <>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 h-10 px-3 text-sm text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={toggleTheme}
+              title={isDark ? "Passer en mode clair" : "Passer en mode sombre"}
+            >
+              {isDark ? (
+                <Sun className="h-5 w-5 text-warning" />
+              ) : (
+                <Moon className="h-5 w-5 text-muted-foreground" />
+              )}
+              <span>{isDark ? "Mode clair" : "Mode sombre"}</span>
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 h-10 px-3 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={signOut}
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Déconnexion</span>
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -207,7 +350,7 @@ export function Sidebar({
   // Mobile view with overlay
   if (isMobile) {
     return (
-      <>
+      <TooltipProvider>
         {/* Global Search Modal */}
         <GlobalSearch open={globalSearch.isOpen} onOpenChange={globalSearch.setIsOpen} />
         
@@ -244,17 +387,37 @@ export function Sidebar({
         )} style={{ top: '4rem', height: 'calc(100vh - 4rem)' }}>
           <SidebarContent />
         </div>
-      </>
+      </TooltipProvider>
     );
   }
 
   // Desktop view
   return (
-    <>
+    <TooltipProvider>
       <GlobalSearch open={globalSearch.isOpen} onOpenChange={globalSearch.setIsOpen} />
-      <div className="hidden md:flex h-screen w-72 flex-col glass-strong border-r border-border/50 sticky top-0">
-        <SidebarContent />
+      <div 
+        className={cn(
+          "hidden md:flex h-screen flex-col glass-strong border-r border-border/50 sticky top-0 transition-all duration-300 ease-in-out relative",
+          isOpen ? "w-72" : "w-[72px]"
+        )}
+      >
+        <SidebarContent collapsed={!isOpen} />
+        
+        {/* Toggle button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggle}
+          className="absolute -right-3 top-20 h-6 w-6 rounded-full border border-border/50 bg-background shadow-sm hover:bg-sidebar-accent z-50"
+          title={isOpen ? "Réduire le menu" : "Agrandir le menu"}
+        >
+          {isOpen ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
       </div>
-    </>
+    </TooltipProvider>
   );
 }

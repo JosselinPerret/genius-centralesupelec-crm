@@ -187,62 +187,65 @@ export function Dashboard() {
 
       {/* Charts Section - Responsive */}
       <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
-        <Card className="shadow-card w-full">
+        <Card className="shadow-card w-full overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg md:text-xl">Répartition des Statuts</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="h-[250px] md:h-[300px]">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Pie
-                    data={statusDistribution.filter(item => item.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={window.innerWidth < 640 ? 60 : 80}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
-                  >
-                    {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
+              <div className="w-full h-[250px] md:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Pie
+                      data={statusDistribution.filter(item => item.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      dataKey="value"
+                      label={({ name, value }) => `${value}`}
+                      labelLine={false}
+                    >
+                      {statusDistribution.filter(item => item.value > 0).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-card w-full">
+        <Card className="shadow-card w-full overflow-hidden">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg md:text-xl">Activité des 7 Derniers Jours</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="h-[250px] md:h-[300px] -mx-2 px-2">
+              <div className="w-full h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={activityData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <BarChart data={activityData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
+                    <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} width={35} />
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="contacted" fill="var(--color-contacted)" name="Contacté" />
-                    <Bar dataKey="inDiscussion" fill="var(--color-inDiscussion)" name="En discussion" />
-                    <Bar dataKey="coming" fill="var(--color-coming)" name="Vient" />
-                    <Bar dataKey="notComing" fill="var(--color-notComing)" name="Ne vient pas" />
-                    <Bar dataKey="nextYear" fill="var(--color-nextYear)" name="Année prochaine" />
+                    <Bar dataKey="contacted" fill="hsl(260, 60%, 50%)" name="Contacté" />
+                    <Bar dataKey="inDiscussion" fill="hsl(45, 100%, 50%)" name="En discussion" />
+                    <Bar dataKey="coming" fill="hsl(142, 71%, 45%)" name="Vient" />
+                    <Bar dataKey="notComing" fill="hsl(0, 71%, 50%)" name="Ne vient pas" />
+                    <Bar dataKey="nextYear" fill="hsl(200, 60%, 50%)" name="Année prochaine" />
                   </BarChart>
                 </ResponsiveContainer>
-              </ChartContainer>
+              </div>
             )}
           </CardContent>
         </Card>
