@@ -3,9 +3,21 @@ import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Building2, Target, TrendingUp, Users, ArrowLeft } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Building2, Target, TrendingUp, Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MainLayout } from '@/components/layout/MainLayout';
@@ -38,11 +50,13 @@ export default function UserStatistics() {
   const { userId } = useParams();
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [users, setUsers] = useState<Profile[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>(userId || '');
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Only admin and manager can access this page
   const canAccess = profile?.role === 'ADMIN' || profile?.role === 'MANAGER';
@@ -120,6 +134,55 @@ export default function UserStatistics() {
     }
   };
 
+  const deleteUser = async () => {
+    if (!selectedUserId || selectedUserId === profile?.user_id) return;
+    
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `https://gzapjsbpymfmliurdqen.supabase.co/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ userId: selectedUserId }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de la suppression');
+      }
+
+      toast({
+        title: "Utilisateur supprimé",
+        description: "L'utilisateur a été supprimé avec succès.",
+      });
+      
+      // Reload users and select another one
+      await loadUsers();
+      setSelectedUser(null);
+      setCompanies([]);
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la suppression",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const isAdmin = profile?.role === 'ADMIN';
+  const canDeleteSelectedUser = isAdmin && selectedUserId && selectedUserId !== profile?.user_id;
+
   if (!canAccess) {
     return <Navigate to="/" replace />;
   }
@@ -173,18 +236,48 @@ export default function UserStatistics() {
           <CardTitle>Sélectionner un utilisateur</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choisir un utilisateur" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((user) => (
-                <SelectItem key={user.user_id} value={user.user_id}>
-                  {user.name} - {user.role}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-3">
+            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Choisir un utilisateur" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user) => (
+                  <SelectItem key={user.user_id} value={user.user_id}>
+                    {user.name} - {user.role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {canDeleteSelectedUser && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="icon" disabled={isDeleting}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer cet utilisateur ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Êtes-vous sûr de vouloir supprimer <strong>{selectedUser?.name}</strong> ? 
+                      Cette action est irréversible et supprimera toutes les données associées à cet utilisateur.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={deleteUser}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Supprimer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </CardContent>
       </Card>
 
