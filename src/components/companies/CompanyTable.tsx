@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft, ChevronRight, LayoutGrid, List } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, Filter, X, ChevronLeft, ChevronRight, LayoutGrid, List, Building2, Users, Sparkles, ArrowUpRight, Phone, Mail, Calendar } from 'lucide-react';
 import { Company } from '@/types/crm';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Badge } from '@/components/ui/badge';
@@ -276,285 +276,389 @@ export function CompanyTable() {
   const effectiveViewMode = isMobile ? 'cards' : viewMode;
 
   if (isAdding) {
-    return <div className="space-y-6">
+    return <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Ajouter une entreprise</h1>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Plus className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">Ajouter une entreprise</h1>
+          </div>
         </div>
         <CompanyForm onSubmit={handleCreateCompany} onCancel={() => setIsAdding(false)} />
       </div>;
   }
   return <>
       <CsvImport onImportComplete={loadCompanies} />
-      <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <CardTitle>Entreprises</CardTitle>
-            <div className="flex items-center gap-2">
-              {/* View mode toggle - hidden on mobile */}
-              {!isMobile && (
-                <div className="flex items-center border rounded-md">
-                  <Button 
-                    variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
-                    size="sm" 
-                    className="rounded-r-none"
-                    onClick={() => setViewMode('table')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant={viewMode === 'cards' ? 'secondary' : 'ghost'} 
-                    size="sm" 
-                    className="rounded-l-none"
-                    onClick={() => setViewMode('cards')}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              {canManageCompanies && (
-                <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAdding(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Ajouter une entreprise</span>
-                  <span className="sm:hidden">Ajouter</span>
-                </Button>
-              )}
+      
+      {/* Header moderne */}
+      <div className="mb-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg">
+              <Building2 className="h-6 w-6 text-white" />
             </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Entreprises</h1>
+              <p className="text-muted-foreground text-sm">
+                {totalCount} entreprise{totalCount !== 1 ? 's' : ''} au total
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* View mode toggle - hidden on mobile */}
+            {!isMobile && (
+              <div className="flex items-center bg-muted/50 rounded-xl p-1">
+                <Button 
+                  variant={viewMode === 'table' ? 'default' : 'ghost'} 
+                  size="sm" 
+                  className={`rounded-lg transition-all ${viewMode === 'table' ? 'shadow-md' : ''}`}
+                  onClick={() => setViewMode('table')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'} 
+                  size="sm" 
+                  className={`rounded-lg transition-all ${viewMode === 'cards' ? 'shadow-md' : ''}`}
+                  onClick={() => setViewMode('cards')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+            {canManageCompanies && (
+              <Button 
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 rounded-xl" 
+                onClick={() => setIsAdding(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Ajouter une entreprise</span>
+                <span className="sm:hidden">Ajouter</span>
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2">
-            <div className="relative flex-1 sm:max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Rechercher des entreprises..." value={filters.searchTerm} onChange={e => {
+        
+        {/* Barre de recherche et filtres */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1 sm:max-w-md">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input 
+              placeholder="Rechercher des entreprises..." 
+              value={filters.searchTerm} 
+              onChange={e => {
                 setFilters(prev => ({
                   ...prev,
                   searchTerm: e.target.value
                 }));
                 setCurrentPage(1);
-              }} className="pl-9" />
-            </div>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Filter className="h-4 w-4" />
-                  Filtres
-                  {hasActiveFilters && <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
-                      !
-                    </Badge>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80" align="start">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium">Filtres</h4>
-                    {hasActiveFilters && <Button variant="ghost" size="sm" onClick={clearFilters}>
-                        <X className="h-4 w-4 mr-1" />
-                        Effacer
-                      </Button>}
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Statut</label>
-                      <Select value={filters.status} onValueChange={value => {
-                        setFilters(prev => ({
-                          ...prev,
-                          status: value
-                        }));
-                        setCurrentPage(1);
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tous les statuts</SelectItem>
-                          <SelectItem value="NOT_TO_CONTACT">N'est pas à démarcher</SelectItem>
-                          <SelectItem value="TO_CONTACT">A démarcher</SelectItem>
-                          <SelectItem value="CONTACTED">Contacté</SelectItem>
-                          <SelectItem value="FIRST_FOLLOWUP">1ère relance</SelectItem>
-                          <SelectItem value="SECOND_FOLLOWUP">2e relance</SelectItem>
-                          <SelectItem value="THIRD_FOLLOWUP">3e relance</SelectItem>
-                          <SelectItem value="IN_DISCUSSION">En discussion</SelectItem>
-                          <SelectItem value="COMING">Vient</SelectItem>
-                          <SelectItem value="NOT_COMING">Ne vient pas</SelectItem>
-                          <SelectItem value="NEXT_YEAR">Année prochaine</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Étiquette</label>
-                      <Select value={filters.tagId} onValueChange={value => {
-                        setFilters(prev => ({
-                          ...prev,
-                          tagId: value
-                        }));
-                        setCurrentPage(1);
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toutes les étiquettes</SelectItem>
-                          {allTags.map(tag => <SelectItem key={tag.id} value={tag.id}>
-                              <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full" style={{
-                                backgroundColor: tag.color
-                              }} />
-                                {tag.name}
-                              </div>
-                            </SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Assignations</label>
-                      <Select value={filters.assignmentFilter} onValueChange={value => {
-                        setFilters(prev => ({
-                          ...prev,
-                          assignmentFilter: value
-                        }));
-                        setCurrentPage(1);
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Toutes les entreprises</SelectItem>
-                          <SelectItem value="assigned">Avec assignations</SelectItem>
-                          <SelectItem value="unassigned">Sans assignations</SelectItem>
-                          <SelectItem value="my-assignments">Mes assignations</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+              }} 
+              className="pl-11 h-11 rounded-xl border-border/50 bg-background/50 backdrop-blur-sm focus:bg-background transition-all" 
+            />
           </div>
           
-          {hasActiveFilters && <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Filtres actifs :</span>
-              {filters.searchTerm && <Badge variant="secondary">Recherche : "{filters.searchTerm}"</Badge>}
-              {filters.status !== 'all' && <Badge variant="secondary">Statut : {filters.status}</Badge>}
-              {filters.tagId !== 'all' && <Badge variant="secondary">
-                  Étiquette : {allTags.find(t => t.id === filters.tagId)?.name}
-                </Badge>}
-              {filters.assignmentFilter !== 'all' && <Badge variant="secondary">
-                  {filters.assignmentFilter === 'assigned' && 'Avec assignations'}
-                  {filters.assignmentFilter === 'unassigned' && 'Sans assignations'}
-                  {filters.assignmentFilter === 'my-assignments' && 'Mes assignations'}
-                </Badge>}
-            </div>}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2 h-11 rounded-xl border-border/50 hover:bg-primary/5 hover:border-primary/30 transition-all">
+                <Filter className="h-4 w-4" />
+                Filtres
+                {hasActiveFilters && (
+                  <span className="ml-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+                    {[filters.searchTerm, filters.status !== 'all', filters.tagId !== 'all', filters.assignmentFilter !== 'all'].filter(Boolean).length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 rounded-xl border-border/50 shadow-xl" align="start">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-foreground">Filtres</h4>
+                  {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4 mr-1" />
+                      Effacer tout
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block text-foreground">Statut</label>
+                    <Select value={filters.status} onValueChange={value => {
+                      setFilters(prev => ({
+                        ...prev,
+                        status: value
+                      }));
+                      setCurrentPage(1);
+                    }}>
+                      <SelectTrigger className="rounded-lg">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="all">Tous les statuts</SelectItem>
+                        <SelectItem value="NOT_TO_CONTACT">N'est pas à démarcher</SelectItem>
+                        <SelectItem value="TO_CONTACT">A démarcher</SelectItem>
+                        <SelectItem value="CONTACTED">Contacté</SelectItem>
+                        <SelectItem value="FIRST_FOLLOWUP">1ère relance</SelectItem>
+                        <SelectItem value="SECOND_FOLLOWUP">2e relance</SelectItem>
+                        <SelectItem value="THIRD_FOLLOWUP">3e relance</SelectItem>
+                        <SelectItem value="IN_DISCUSSION">En discussion</SelectItem>
+                        <SelectItem value="COMING">Vient</SelectItem>
+                        <SelectItem value="NOT_COMING">Ne vient pas</SelectItem>
+                        <SelectItem value="NEXT_YEAR">Année prochaine</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block text-foreground">Étiquette</label>
+                    <Select value={filters.tagId} onValueChange={value => {
+                      setFilters(prev => ({
+                        ...prev,
+                        tagId: value
+                      }));
+                      setCurrentPage(1);
+                    }}>
+                      <SelectTrigger className="rounded-lg">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="all">Toutes les étiquettes</SelectItem>
+                        {allTags.map(tag => (
+                          <SelectItem key={tag.id} value={tag.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: tag.color }} />
+                              {tag.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block text-foreground">Assignations</label>
+                    <Select value={filters.assignmentFilter} onValueChange={value => {
+                      setFilters(prev => ({
+                        ...prev,
+                        assignmentFilter: value
+                      }));
+                      setCurrentPage(1);
+                    }}>
+                      <SelectTrigger className="rounded-lg">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="all">Toutes les entreprises</SelectItem>
+                        <SelectItem value="assigned">Avec assignations</SelectItem>
+                        <SelectItem value="unassigned">Sans assignations</SelectItem>
+                        <SelectItem value="my-assignments">Mes assignations</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-      </CardHeader>
-      <CardContent>
+        
+        {/* Filtres actifs */}
+        {hasActiveFilters && (
+          <div className="flex items-center flex-wrap gap-2 mt-4 animate-fade-in">
+            {filters.searchTerm && (
+              <Badge variant="secondary" className="rounded-lg px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors" onClick={() => setFilters(prev => ({ ...prev, searchTerm: '' }))}>
+                <Search className="h-3 w-3 mr-1" />
+                "{filters.searchTerm}"
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            )}
+            {filters.status !== 'all' && (
+              <Badge variant="secondary" className="rounded-lg px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors" onClick={() => setFilters(prev => ({ ...prev, status: 'all' }))}>
+                Statut : {filters.status}
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            )}
+            {filters.tagId !== 'all' && (
+              <Badge variant="secondary" className="rounded-lg px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors" onClick={() => setFilters(prev => ({ ...prev, tagId: 'all' }))}>
+                Étiquette : {allTags.find(t => t.id === filters.tagId)?.name}
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            )}
+            {filters.assignmentFilter !== 'all' && (
+              <Badge variant="secondary" className="rounded-lg px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors" onClick={() => setFilters(prev => ({ ...prev, assignmentFilter: 'all' }))}>
+                {filters.assignmentFilter === 'assigned' && 'Avec assignations'}
+                {filters.assignmentFilter === 'unassigned' && 'Sans assignations'}
+                {filters.assignmentFilter === 'my-assignments' && 'Mes assignations'}
+                <X className="h-3 w-3 ml-1" />
+              </Badge>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {/* Contenu principal */}
+      <Card className="shadow-lg border-border/50 rounded-2xl overflow-hidden">
+        <CardContent className="p-0">
         {/* Loading state */}
         {isLoading ? (
-          effectiveViewMode === 'cards' ? (
-            <CompanyCardSkeleton count={6} />
-          ) : (
-            <TableSkeleton rows={5} columns={7} />
-          )
+          <div className="p-6">
+            {effectiveViewMode === 'cards' ? (
+              <CompanyCardSkeleton count={6} />
+            ) : (
+              <TableSkeleton rows={5} columns={7} />
+            )}
+          </div>
         ) : filteredCompanies.length === 0 ? (
           /* Empty state */
-          companies.length === 0 ? (
-            <EmptyCompanies onAdd={() => setIsAdding(true)} />
-          ) : (
-            <EmptySearchResults onClear={clearFilters} />
-          )
+          <div className="p-6">
+            {companies.length === 0 ? (
+              <EmptyCompanies onAdd={() => setIsAdding(true)} />
+            ) : (
+              <EmptySearchResults onClear={clearFilters} />
+            )}
+          </div>
         ) : effectiveViewMode === 'cards' ? (
           /* Card view */
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCompanies.map(company => (
-              <CompanyCard 
-                key={company.id}
-                company={company}
-                canDelete={canDeleteCompanies}
-                onDelete={handleDeleteCompany}
-              />
+          <div className="p-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredCompanies.map((company, index) => (
+              <div key={company.id} className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                <CompanyCard 
+                  company={company}
+                  canDelete={canDeleteCompanies}
+                  onDelete={handleDeleteCompany}
+                />
+              </div>
             ))}
           </div>
         ) : (
-          /* Table view */
-          <div className="rounded-md border">
+          /* Table view moderne */
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Entreprise</TableHead>
-                  <TableHead className="hidden md:table-cell">Contact</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="hidden lg:table-cell">Étiquettes</TableHead>
-                  <TableHead className="hidden md:table-cell">Assignations</TableHead>
-                  <TableHead className="hidden sm:table-cell">Modifié</TableHead>
+                <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/50">
+                  <TableHead className="font-semibold text-foreground">Entreprise</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold text-foreground">Contact</TableHead>
+                  <TableHead className="font-semibold text-foreground">Statut</TableHead>
+                  <TableHead className="hidden lg:table-cell font-semibold text-foreground">Étiquettes</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold text-foreground">Assignations</TableHead>
+                  <TableHead className="hidden sm:table-cell font-semibold text-foreground">Modifié</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCompanies.map(company => (
-                  <TableRow key={company.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(`/company/${company.id}`)}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium text-foreground">{company.name}</div>
-                        {company.phone && <div className="text-sm text-muted-foreground">{company.phone}</div>}
+                {filteredCompanies.map((company, index) => (
+                  <TableRow 
+                    key={company.id} 
+                    className="group cursor-pointer border-b border-border/30 hover:bg-primary/5 transition-all duration-200 animate-fade-in" 
+                    style={{ animationDelay: `${index * 30}ms` }}
+                    onClick={() => navigate(`/company/${company.id}`)}
+                  >
+                    <TableCell className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-semibold text-sm group-hover:from-primary/30 group-hover:to-accent/30 transition-all">
+                          {company.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                            {company.name}
+                            <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          {company.phone && (
+                            <div className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {company.phone}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {company.contact_name && <div>
+                      {company.contact_name ? (
+                        <div>
                           <div className="font-medium text-foreground">{company.contact_name}</div>
-                          {company.contact_email && <div className="text-sm text-muted-foreground">{company.contact_email}</div>}
-                        </div>}
+                          {company.contact_email && (
+                            <div className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {company.contact_email}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={company.status} />
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {company.tags?.slice(0, 2).map(tag => <Badge key={tag.id} style={{
-                    backgroundColor: tag.color,
-                    color: 'white'
-                  }}>
+                      <div className="flex flex-wrap gap-1.5">
+                        {company.tags?.slice(0, 2).map(tag => (
+                          <Badge 
+                            key={tag.id} 
+                            className="rounded-lg text-xs font-medium shadow-sm"
+                            style={{ backgroundColor: tag.color, color: 'white' }}
+                          >
                             {tag.name}
-                          </Badge>)}
-                        {(company.tags?.length || 0) > 2 && <span className="text-xs text-muted-foreground">
+                          </Badge>
+                        ))}
+                        {(company.tags?.length || 0) > 2 && (
+                          <Badge variant="secondary" className="rounded-lg text-xs">
                             +{(company.tags?.length || 0) - 2}
-                          </span>}
+                          </Badge>
+                        )}
+                        {!company.tags?.length && <span className="text-muted-foreground text-sm">—</span>}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        {company.assignedUsers && company.assignedUsers > 0 ? <Badge variant="secondary">
-                            {company.assignedUsers} utilisateur{company.assignedUsers !== 1 ? 's' : ''}
-                          </Badge> : <span className="text-sm text-muted-foreground">Aucune</span>}
-                        {company.hasCurrentUserAssignment && <Badge variant="outline" className="text-primary border-primary">
+                        {company.assignedUsers && company.assignedUsers > 0 ? (
+                          <Badge variant="secondary" className="rounded-lg bg-muted/50 hover:bg-muted">
+                            <Users className="h-3 w-3 mr-1" />
+                            {company.assignedUsers}
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                        {company.hasCurrentUserAssignment && (
+                          <Badge className="rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border-0">
+                            <Sparkles className="h-3 w-3 mr-1" />
                             Vous
-                          </Badge>}
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
-                      {new Date(company.updated_at).toLocaleDateString('fr-FR')}
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(company.updated_at).toLocaleDateString('fr-FR')}
+                      </div>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg hover:bg-muted">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
+                        <DropdownMenuContent align="end" className="rounded-xl border-border/50 shadow-lg">
+                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)} className="rounded-lg cursor-pointer">
                             <Eye className="mr-2 h-4 w-4" />
                             Voir les détails
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)}>
+                          <DropdownMenuItem onClick={() => navigate(`/company/${company.id}`)} className="rounded-lg cursor-pointer">
                             <Edit className="mr-2 h-4 w-4" />
                             Modifier
                           </DropdownMenuItem>
-                          {canDeleteCompanies && <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteCompany(company.id)}>
+                          {canDeleteCompanies && (
+                            <DropdownMenuItem 
+                              className="text-destructive rounded-lg cursor-pointer focus:text-destructive focus:bg-destructive/10" 
+                              onClick={() => handleDeleteCompany(company.id)}
+                            >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Supprimer
-                            </DropdownMenuItem>}
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -565,21 +669,61 @@ export function CompanyTable() {
           </div>
         )}
         
-        {/* Pagination */}
+        {/* Pagination moderne */}
         {!isLoading && !hasActiveFilters && totalCount > itemsPerPage && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-border/50 bg-muted/20">
             <p className="text-sm text-muted-foreground text-center sm:text-left">
-              Affichage de {(currentPage - 1) * itemsPerPage + 1} à {Math.min(currentPage * itemsPerPage, totalCount)} sur {totalCount} entreprises
+              <span className="font-medium text-foreground">{(currentPage - 1) * itemsPerPage + 1}</span>
+              {' à '}
+              <span className="font-medium text-foreground">{Math.min(currentPage * itemsPerPage, totalCount)}</span>
+              {' sur '}
+              <span className="font-medium text-foreground">{totalCount}</span>
+              {' entreprises'}
             </p>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                disabled={currentPage === 1}
+                className="rounded-lg border-border/50 hover:bg-primary/5 hover:border-primary/30 disabled:opacity-40"
+              >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="hidden sm:inline ml-1">Précédent</span>
               </Button>
-              <span className="text-sm text-muted-foreground">
-                {currentPage} / {Math.ceil(totalCount / itemsPerPage)}
-              </span>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}>
+              <div className="flex items-center gap-1 px-3">
+                {Array.from({ length: Math.min(5, Math.ceil(totalCount / itemsPerPage)) }, (_, i) => {
+                  const totalPages = Math.ceil(totalCount / itemsPerPage);
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={currentPage === pageNum ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 p-0 rounded-lg ${currentPage === pageNum ? 'shadow-md' : ''}`}
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / itemsPerPage), p + 1))} 
+                disabled={currentPage >= Math.ceil(totalCount / itemsPerPage)}
+                className="rounded-lg border-border/50 hover:bg-primary/5 hover:border-primary/30 disabled:opacity-40"
+              >
                 <span className="hidden sm:inline mr-1">Suivant</span>
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -587,9 +731,10 @@ export function CompanyTable() {
           </div>
         )}
         {!isLoading && hasActiveFilters && (
-          <div className="mt-4">
+          <div className="p-4 border-t border-border/50 bg-muted/20">
             <p className="text-sm text-muted-foreground">
-              {filteredCompanies.length} entreprise{filteredCompanies.length !== 1 ? 's' : ''} trouvée{filteredCompanies.length !== 1 ? 's' : ''}
+              <span className="font-semibold text-foreground">{filteredCompanies.length}</span>
+              {' entreprise'}{filteredCompanies.length !== 1 ? 's' : ''}{' trouvée'}{filteredCompanies.length !== 1 ? 's' : ''}
             </p>
           </div>
         )}

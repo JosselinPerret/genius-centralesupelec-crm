@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Building2, LayoutDashboard, Users, Tag, LogOut, UserCheck, BarChart3, UserCircle, Moon, Sun, Menu, X, Trophy, ChevronLeft, ChevronRight, Sparkles, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -17,23 +17,28 @@ interface SidebarProps {
 const navigation = [{
   id: 'dashboard',
   name: 'Tableau de bord',
-  icon: LayoutDashboard
+  icon: LayoutDashboard,
+  color: 'text-primary'
 }, {
   id: 'companies',
   name: 'Entreprises',
-  icon: Building2
+  icon: Building2,
+  color: 'text-info'
 }, {
   id: 'assignments',
   name: 'Assignations',
-  icon: UserCheck
+  icon: UserCheck,
+  color: 'text-success'
 }, {
   id: 'users',
   name: 'Utilisateurs',
-  icon: Users
+  icon: Users,
+  color: 'text-warning'
 }, {
   id: 'tags',
   name: 'Étiquettes',
-  icon: Tag
+  icon: Tag,
+  color: 'text-accent'
 }];
 
 export function Sidebar({
@@ -52,11 +57,9 @@ export function Sidebar({
   const globalSearch = useGlobalSearch();
 
   const handleTabClick = (tab: string) => {
-    console.log('handleTabClick called with:', tab, 'onTabChange:', !!onTabChange);
     if (onTabChange) {
       onTabChange(tab);
     } else {
-      console.log('Navigating to:', `/?tab=${tab}`);
       navigate(`/?tab=${tab}`);
     }
     if (isMobile) {
@@ -82,18 +85,15 @@ export function Sidebar({
             <Button 
               variant="ghost" 
               className={cn(
-                "w-full justify-center h-11 px-3 transition-all duration-200",
+                "w-full justify-center h-12 px-3 transition-all duration-300 rounded-xl",
                 isActive 
-                  ? "bg-primary/10 text-primary border-l-2 border-primary rounded-l-none" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  ? "bg-primary text-primary-foreground shadow-md" 
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )} 
               onClick={() => handleTabClick(item.id)}
               type="button"
             >
-              <Icon className={cn(
-                "h-5 w-5 flex-shrink-0 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )} />
+              <Icon className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={10}>
@@ -107,19 +107,20 @@ export function Sidebar({
       <Button 
         variant="ghost" 
         className={cn(
-          "w-full justify-start gap-3 h-11 px-3 text-sm font-medium transition-all duration-200",
+          "w-full justify-start gap-3 h-12 px-4 text-sm font-medium transition-all duration-300 rounded-xl group",
           isActive 
-            ? "bg-primary/10 text-primary border-l-2 border-primary rounded-l-none" 
-            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            ? "bg-primary text-primary-foreground shadow-md" 
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )} 
         onClick={() => handleTabClick(item.id)}
         type="button"
       >
         <Icon className={cn(
-          "h-5 w-5 flex-shrink-0 transition-colors",
-          isActive ? "text-primary" : "text-muted-foreground"
+          "h-5 w-5 transition-transform duration-300",
+          !isActive && "group-hover:scale-110"
         )} />
-        <span>{item.name}</span>
+        <span className="font-medium">{item.name}</span>
+        {isActive && <Sparkles className="h-3 w-3 ml-auto animate-pulse" />}
       </Button>
     );
   };
@@ -127,16 +128,16 @@ export function Sidebar({
   const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex h-16 items-center border-b border-sidebar-border px-4">
+      <div className="flex h-16 items-center border-b border-sidebar-border/50 px-4">
         <div className="flex items-center justify-between w-full">
           <div className={cn("flex items-center gap-3", collapsed && "justify-center w-full")}>
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary shadow-md flex-shrink-0">
-              <Building2 className="h-5 w-5 text-primary-foreground" />
+            <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-primary shadow-lg shadow-primary/25 flex-shrink-0 transition-transform hover:scale-105">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
             {!collapsed && (
               <div className="flex flex-col">
-                <h1 className="text-base font-bold text-foreground">CRM Genius</h1>
-                <span className="text-xs text-muted-foreground">Gestion d'entreprises</span>
+                <h1 className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">CRM Genius</h1>
+                <span className="text-[11px] text-muted-foreground">Gestion d'entreprises</span>
               </div>
             )}
           </div>
@@ -145,12 +146,12 @@ export function Sidebar({
       
       {/* User info */}
       {profile && (
-        <div className={cn("px-4 py-3 border-b border-sidebar-border", collapsed && "px-2")}>
+        <div className={cn("px-3 py-4 border-b border-sidebar-border/50", collapsed && "px-2")}>
           {collapsed ? (
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <div className="flex items-center justify-center p-2 rounded-lg bg-sidebar-accent/50">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
+                <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary text-white text-sm font-bold shadow-md cursor-pointer hover:scale-105 transition-transform">
                     {profile.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                 </div>
@@ -163,13 +164,13 @@ export function Sidebar({
               </TooltipContent>
             </Tooltip>
           ) : (
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent/50">
-              <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/10">
+              <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-primary text-white text-sm font-bold shadow-md">
                 {profile.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{profile.name}</p>
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                <p className="text-sm font-semibold text-foreground truncate">{profile.name}</p>
+                <Badge className="mt-1 text-[10px] px-2 py-0 h-5 bg-primary/10 text-primary border-0 font-medium">
                   {profile.role}
                 </Badge>
               </div>
@@ -180,23 +181,32 @@ export function Sidebar({
       
       {/* Search */}
       {!collapsed && (
-        <div className="px-3 pt-3">
-          <SearchTrigger onClick={globalSearch.open} />
+        <div className="px-3 pt-4">
+          <button
+            onClick={globalSearch.open}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground bg-muted/50 hover:bg-muted rounded-xl transition-colors group"
+          >
+            <Search className="h-4 w-4 group-hover:text-primary transition-colors" />
+            <span>Rechercher...</span>
+            <kbd className="ml-auto text-[10px] bg-background px-2 py-0.5 rounded-md border font-mono">⌘K</kbd>
+          </button>
         </div>
       )}
       
       {/* Navigation */}
-      <nav className={cn("flex-1 px-3 py-4 space-y-1 overflow-y-auto", collapsed && "px-2")}>
+      <nav className={cn("flex-1 px-3 py-4 space-y-2 overflow-y-auto", collapsed && "px-2")}>
         {!collapsed && (
-          <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Menu principal
+          <p className="px-4 mb-3 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
+            Navigation
           </p>
         )}
-        {navigation.map(item => (
-          <NavButton key={item.id} item={item} isActive={activeTab === item.id} />
+        {navigation.map((item, index) => (
+          <div key={item.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+            <NavButton item={item} isActive={activeTab === item.id} />
+          </div>
         ))}
         
-        <div className="pt-4 mt-4 border-t border-sidebar-border">
+        <div className="pt-4 mt-4 border-t border-sidebar-border/50">
           {!collapsed && (
             <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Statistiques
