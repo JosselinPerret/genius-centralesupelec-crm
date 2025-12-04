@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Eye, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CompanyStatus } from '@/types/crm';
 
 interface Tag {
   id: string;
@@ -19,7 +20,7 @@ interface Company {
   contact_name?: string;
   contact_email?: string;
   phone?: string;
-  status: string;
+  status: CompanyStatus;
   updated_at: string;
   tags?: Tag[];
   assignedUsers?: number;

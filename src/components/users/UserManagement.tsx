@@ -3,7 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Shield, UserCheck } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Users, Shield, UserCheck, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +44,7 @@ const roleColors = {
 export function UserManagement() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -107,6 +119,47 @@ export function UserManagement() {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    setDeletingUserId(userId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `https://gzapjsbpymfmliurdqen.supabase.co/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de la suppression');
+      }
+
+      await loadProfiles();
+      
+      toast({
+        title: "Utilisateur supprimé",
+        description: "L'utilisateur a été supprimé avec succès.",
+      });
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors de la suppression",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   const canManageRoles = profile?.role === 'ADMIN';
 
   const getUserStats = () => {
@@ -155,10 +208,10 @@ export function UserManagement() {
 
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>Gestion des utilisateurs</CardTitle>
           {!canManageRoles && (
             <p className="text-sm text-muted-foreground">
-              Only administrators can modify user roles.
+              Seuls les administrateurs peuvent modifier les rôles et supprimer des utilisateurs.
             </p>
           )}
         </CardHeader>
@@ -166,11 +219,12 @@ export function UserManagement() {
           <div className="space-y-4">
             {profiles.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No users found.
+                Aucun utilisateur trouvé.
               </div>
             ) : (
               profiles.map((userProfile) => {
                 const RoleIcon = roleIcons[userProfile.role];
+                const isCurrentUser = userProfile.user_id === profile?.user_id;
                 return (
                   <div
                     key={userProfile.id}
@@ -183,7 +237,7 @@ export function UserManagement() {
                       <div>
                         <p className="font-medium text-foreground">{userProfile.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          Joined {formatDistanceToNow(new Date(userProfile.created_at), { addSuffix: true })}
+                          Inscrit {formatDistanceToNow(new Date(userProfile.created_at), { addSuffix: true })}
                         </p>
                       </div>
                     </div>
@@ -193,25 +247,57 @@ export function UserManagement() {
                         {userProfile.role}
                       </Badge>
                       
-                      {canManageRoles && userProfile.user_id !== profile?.user_id && (
-                        <Select
-                          value={userProfile.role}
-                          onValueChange={(newRole: any) => updateUserRole(userProfile.user_id, newRole)}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="VOLUNTEER">Volunteer</SelectItem>
-                            <SelectItem value="MANAGER">Manager</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      {canManageRoles && !isCurrentUser && (
+                        <>
+                          <Select
+                            value={userProfile.role}
+                            onValueChange={(newRole: any) => updateUserRole(userProfile.user_id, newRole)}
+                            disabled={isLoading}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="VOLUNTEER">Volunteer</SelectItem>
+                              <SelectItem value="MANAGER">Manager</SelectItem>
+                              <SelectItem value="ADMIN">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                disabled={deletingUserId === userProfile.user_id}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Supprimer cet utilisateur ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Êtes-vous sûr de vouloir supprimer <strong>{userProfile.name}</strong> ? 
+                                  Cette action est irréversible et supprimera toutes les données associées à cet utilisateur.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteUser(userProfile.user_id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
                       )}
                       
-                      {userProfile.user_id === profile?.user_id && (
-                        <Badge variant="outline">You</Badge>
+                      {isCurrentUser && (
+                        <Badge variant="outline">Vous</Badge>
                       )}
                     </div>
                   </div>
