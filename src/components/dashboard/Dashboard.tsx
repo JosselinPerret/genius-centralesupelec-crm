@@ -156,53 +156,45 @@ export function Dashboard() {
         </Button>
       </div>
 
-      {/* Stats Grid - Responsive with animations */}
+      {/* Stats Grid */}
       <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="animate-fade-in stagger-1">
-          <StatsCard
-            title="Total Entreprises"
-            value={totalCompanies}
-            description="Toutes les entreprises"
-            icon={Building2}
-            trend={totalTrend}
-            variant="default"
-          />
-        </div>
-        <div className="animate-fade-in stagger-2">
-          <StatsCard
-            title="Confirmées"
-            value={activeCompanies}
-            description="Entreprises qui viennent"
-            icon={Users}
-            trend={activeTrend}
-            variant="success"
-          />
-        </div>
-        <div className="animate-fade-in stagger-3">
-          <StatsCard
-            title="À démarcher"
-            value={prospects}
-            description="Prospects à contacter"
-            icon={Target}
-            trend={prospectsTrend}
-            variant="warning"
-          />
-        </div>
-        <div className="animate-fade-in stagger-4">
-          <StatsCard
-            title="Taux de conversion"
-            value={`${conversionRate}%`}
-            description="Ratio de confirmation"
-            icon={TrendingUp}
-            trend={conversionTrend}
-            variant="info"
-          />
-        </div>
+        <StatsCard
+          title="Total Entreprises"
+          value={totalCompanies}
+          description="Toutes les entreprises"
+          icon={Building2}
+          trend={totalTrend}
+          variant="default"
+        />
+        <StatsCard
+          title="Confirmées"
+          value={activeCompanies}
+          description="Entreprises qui viennent"
+          icon={Users}
+          trend={activeTrend}
+          variant="success"
+        />
+        <StatsCard
+          title="À démarcher"
+          value={prospects}
+          description="Prospects à contacter"
+          icon={Target}
+          trend={prospectsTrend}
+          variant="warning"
+        />
+        <StatsCard
+          title="Taux de conversion"
+          value={`${conversionRate}%`}
+          description="Ratio de confirmation"
+          icon={TrendingUp}
+          trend={conversionTrend}
+          variant="info"
+        />
       </div>
 
-      {/* Charts Section - Modern design */}
+      {/* Charts Section */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-in stagger-5">
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-primary/10">
@@ -257,7 +249,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-in stagger-6">
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-info/10">
