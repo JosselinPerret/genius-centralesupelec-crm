@@ -432,28 +432,29 @@
     }
   }
 
+  /* Animations only run once - use animation-fill-mode: both to prevent flashing */
   .animate-fade-in {
-    animation: fade-in 0.5s ease-out forwards;
+    animation: fade-in 0.4s ease-out both;
   }
 
   .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
+    animation: fade-in-up 0.5s ease-out both;
   }
 
   .animate-slide-in-right {
-    animation: slide-in-right 0.4s ease-out forwards;
+    animation: slide-in-right 0.35s ease-out both;
   }
 
   .animate-slide-in-left {
-    animation: slide-in-left 0.4s ease-out forwards;
+    animation: slide-in-left 0.35s ease-out both;
   }
 
   .animate-scale-in {
-    animation: scale-in 0.3s ease-out forwards;
+    animation: scale-in 0.25s ease-out both;
   }
 
   .animate-bounce-in {
-    animation: bounce-in 0.5s ease-out forwards;
+    animation: bounce-in 0.4s ease-out both;
   }
 
   .animate-pulse-soft {
@@ -463,14 +464,6 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-
-  /* Stagger children animation delays */
-  .stagger-1 { animation-delay: 0.05s; opacity: 0; }
-  .stagger-2 { animation-delay: 0.1s; opacity: 0; }
-  .stagger-3 { animation-delay: 0.15s; opacity: 0; }
-  .stagger-4 { animation-delay: 0.2s; opacity: 0; }
-  .stagger-5 { animation-delay: 0.25s; opacity: 0; }
-  .stagger-6 { animation-delay: 0.3s; opacity: 0; }
 
   /* Custom utilities */
   .text-balance {
@@ -484,5 +477,21 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-fade-in-up,
+    .animate-slide-in-right,
+    .animate-slide-in-left,
+    .animate-scale-in,
+    .animate-bounce-in,
+    .animate-pulse-soft,
+    .animate-float {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 }
